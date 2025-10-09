@@ -95,12 +95,12 @@ const contextSenderIsSudo = tempContext.senderIsSudo;
         message.message?.videoMessage?.caption?.trim() ||  
         '';  
        // === LOG ALL MESSAGES ===
-console.log(rainbow(`\n┏‎━━━━━━━━[GIFT-MD]‎━━━━━━━━┓
+console.log(rainbow(`\n\n┏‎━━━━━━━━[GIFT-MD]‎━━━━━━━━┓
 ┃ 📩 New Message
 ┃ 📍 Chat: ${isGroup ? "𝗚𝗿𝗼𝘂𝗽" : isChannel ? "𝗖𝗵𝗮𝗻𝗻𝗲𝗹" : "𝗣𝗿𝗶𝘃𝗮𝘁𝗲"}
 ┃ 🆔 Chatid: ${chatId}
 ┃ 👤 Sender: ${senderId}
-┃ 💌 Text: ${rawText || "[𝗠𝗲𝗱𝗶𝗮/𝗦𝘁𝗶𝗰𝗸𝗲𝗿/𝗢𝘁𝗵𝗲𝗿]"}
+┃ 💌 Text: ${rawText || "[N/A]"}
 ┗‎━━━━━━━━━‎━━━━━━━━━‎━━━━━━┛\n\n`));
     // Only log command usage  
     if (userMessage.startsWith(currentPrefix)) {  
