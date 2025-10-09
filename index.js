@@ -239,8 +239,13 @@ async function startXeonBotInc() {
     }
 
     // Clean the phone number - remove any non-digit characters
-phoneNumber = phoneNumber.replace(/[^0-9]/g, '')
+if (!phoneNumber || phoneNumber.trim() === '') {
+    console.log(chalk.red('❌ No owner number provided in settings.'));
+    console.log(chalk.yellow('👉 Please add your owner number in settings.js before starting the bot.'));
+    process.exit(1); // Stop the bot so user fixes it
+}
 
+phoneNumber = phoneNumber.replace(/[^0-9]/g, '');
     // Validate the phone number using awesome-phonenumber (ESM compatible)
     if (!awesomePhoneNumber('+' + phoneNumber).isValid()) {
         console.log(chalk.bold.red('Invalid phone number. Please enter your full international number (e.g., 15551234567 for US, 447911123456 for UK, etc.) without + or spaces.'));
