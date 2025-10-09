@@ -239,7 +239,7 @@ async function startXeonBotInc() {
     }
 
     // Clean the phone number - remove any non-digit characters
-    //phoneNumber = phoneNumber.replace(/[^0-9]/g, '')
+phoneNumber = phoneNumber.replace(/[^0-9]/g, '')
 
     // Validate the phone number using awesome-phonenumber (ESM compatible)
     if (!awesomePhoneNumber('+' + phoneNumber).isValid()) {
