@@ -96,13 +96,13 @@ const contextSenderIsSudo = tempContext.senderIsSudo;
         '';  
        // === LOG ALL MESSAGES ===
 console.log(rainbow(`
-════════[GIFT-MD]═════════
-║ 📩 New Message
-║ 📍 Chat: ${isGroup ? "𝗚𝗿𝗼𝘂𝗽" : isChannel ? "𝗖𝗵𝗮𝗻𝗻𝗲𝗹" : "𝗣𝗿𝗶𝘃𝗮𝘁𝗲"}
-║ 🆔 Chatid: ${chatId}
-║ 👤 Sender: ${senderId}
-║ 💌 Text: ${rawText || "[𝗠𝗲𝗱𝗶𝗮/𝗦𝘁𝗶𝗰𝗸𝗲𝗿/𝗢𝘁𝗵𝗲𝗿]"}
-`));
+‎┏‎━━━━━━━━[GIFT-MD]‎━━━━━━━━┓
+┃ 📩 New Message
+┃ 📍 Chat: ${isGroup ? "𝗚𝗿𝗼𝘂𝗽" : isChannel ? "𝗖𝗵𝗮𝗻𝗻𝗲𝗹" : "𝗣𝗿𝗶𝘃𝗮𝘁𝗲"}
+┃ 🆔 Chatid: ${chatId}
+┃ 👤 Sender: ${senderId}
+┃ 💌 Text: ${rawText || "[𝗠𝗲𝗱𝗶𝗮/𝗦𝘁𝗶𝗰𝗸𝗲𝗿/𝗢𝘁𝗵𝗲𝗿]"}
+┗‎━━━━━━━━━‎━━━━━━━━━‎━━━━━━┛`));
     // Only log command usage  
     if (userMessage.startsWith(currentPrefix)) {  
         // ✅ FIXED: Reduced auto-reactions to avoid rate limits  
