@@ -62,7 +62,7 @@ const restorePresenceSettings = async (sock) => {
         console.error('❌ Error restoring presence settings:', err);
     }
 };
-console.clear();
+//console.clear();
 // ===== HANDLE MESSAGES ======//
 async function handleMessages(sock, messageUpdate, printLog) {
 try {
