@@ -1,29 +1,22 @@
 const settings = {
 
   botName: "GIFT md",
+  
+  botOwner: 'eminentboy', //Ur-Name
+  
+  ownerNumber: '', //👈input ur phone number in-between empty '',
 
-  ownerNumber: '2349059802473',
-    sudo: ["2348154853640"],
-
-  packname: 'Knight Bot',
+  packname: 'GIFT MD',
 
   prefix: '.',
-
-  menuAudio: "off",
-
-frontTextStyle: "giftmd", // normal | bold | italic | mono
 
   defaultReaction: '✅',  // Fixed
 
   errorReaction: '❌',
 
-  version: "2.0.0",
-
  watermark: "©Gift md is on fire!🔥",
 
   Mode: "private",
-
-  botOwner: 'eminentboy', //Ur-Name
 
   description: "This is a bot for managing group commands and automating tasks.",
 
