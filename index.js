@@ -1,4 +1,5 @@
 import { useSQLiteAuthState, clearSQLiteSession } from './lib/sqliteAuth.js';
+import messageStore from './lib/messageStore.js';
 import { spawn } from 'child_process';
 import path from 'path';
 import fs from 'fs';
@@ -48,23 +49,43 @@ const MAX_RETRIES = 3; // You can increase or decrease this
 console.log(chalk.cyan('┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓'))
 console.log(chalk.cyan('┃') + chalk.white.bold('          🤖 GIFT MD BOT STARTING...        ') + chalk.cyan(' ┃'))
 console.log(chalk.cyan('┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛'))
+// Create a hybrid store object with required methods
 const store = {
-    messages: {},
+    messages: {},     // In-memory cache (fast access)
     contacts: {},
     chats: {},
+    maxInMemory: 50,  // Keep only 50 recent messages per chat in RAM
+    
     groupMetadata: async (jid) => {
         return {}
     },
+    
     bind: function(ev) {
-        // Handle events
+        // Handle message events
         ev.on('messages.upsert', ({ messages }) => {
             messages.forEach(msg => {
                 if (msg.key && msg.key.remoteJid) {
-                    this.messages[msg.key.remoteJid] = this.messages[msg.key.remoteJid] || {}
-                    this.messages[msg.key.remoteJid][msg.key.id] = msg
+                    const jid = msg.key.remoteJid;
+                    
+                    // ✅ SAVE TO DATABASE (persistent)
+                    messageStore.save(msg);
+                    
+                    // ✅ KEEP IN MEMORY (fast access)
+                    if (!this.messages[jid]) {
+                        this.messages[jid] = [];
+                    }
+                    
+                    // Add to memory array
+                    this.messages[jid].push(msg);
+                    
+                    // Limit memory usage - keep only last N messages
+                    if (this.messages[jid].length > this.maxInMemory) {
+                        this.messages[jid].shift(); // Remove oldest
+                    }
                 }
             })
         })
+        
         ev.on('contacts.update', (contacts) => {
             contacts.forEach(contact => {
                 if (contact.id) {
@@ -77,10 +98,28 @@ const store = {
             this.chats = chats
         })
     },
+    
     loadMessage: async (jid, id) => {
-        return this.messages[jid]?.[id] || null
+        // 🚀 TRY MEMORY FIRST (instant)
+        if (this.messages[jid]) {
+            const memMsg = this.messages[jid].find(m => m.key.id === id);
+            if (memMsg) {
+                // console.log('✅ Message loaded from RAM');
+                return memMsg;
+            }
+        }
+        
+        // 💾 FALLBACK TO DATABASE (persistent - works after restart!)
+        const dbMsg = messageStore.load(jid, id);
+        if (dbMsg) {
+            // console.log('✅ Message loaded from database');
+            return dbMsg;
+        }
+        
+        // ❌ Not found
+        return null;
     }
-}
+};
 
 let phoneNumber = "911234567890"
 let owner = JSON.parse(fs.readFileSync('./data/database.json')).settings.User;
