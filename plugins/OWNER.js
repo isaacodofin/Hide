@@ -1,4 +1,5 @@
 //I'm coked 😭
+import messageStore from '../lib/messageStore.js';
 import fs from 'fs';
 import  { jidNormalizedUser }  from '@whiskeysockets/baileys';
 import {
@@ -1232,45 +1233,77 @@ Bot will restart to apply changes...`);
                 await reply(`❌ Failed to reset database!\n\nError: ${error.message}\n\nPlease check console for details.`);
             }
         }
-    }
-];
-
-// Helper functions for cleartmp command// Helper functions for 
-/**export function attachClearTmpHelpers(commands) {
-    commands.forEach(cmd => {
-        if (cmd.name === 'cleartmp') {
-            cmd.getFolderSize = function (dirPath) {
-                let size = 0;
-                let count = 0;
-
-                try {
-                    const files = fs.readdirSync(dirPath);
-                    files.forEach(file => {
-                        const filePath = path.join(dirPath, file);
-                        const stats = fs.lstatSync(filePath);
-                        if (stats.isDirectory()) {
-                            const subResult = this.getFolderSize(filePath);
-                            size += subResult.size;
-                            count += subResult.count;
-                        } else {
-                            size += stats.size;
-                            count++;
-                        }
-                    });
-                } catch (error) {
-                    console.error(`Error reading ${dirPath}:`, error.message);
-                }
-
-                return { size, count };
-            };
-
-            cmd.formatBytes = function (bytes) {
-                if (bytes === 0) return '0 Bytes';
-                const k = 1024;
-                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-                const i = Math.floor(Math.log(bytes) / Math.log(k));
-                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-            };
+   },
+  {
+    name: 'msgstats',
+    aliases: ['messagestats', 'dbstats'],
+    category: 'owner',
+    description: 'Get message database statistics',
+    usage: '.msgstats',
+    
+    execute: async (sock, message, args, context) => {
+        const { reply, senderIsSudo } = context;
+        
+        if (!senderIsSudo) {
+            return await reply('❌ This command is only for bot owners!');
         }
-    });
-}*/
+        
+        try {
+            const stats = messageStore.getStats();
+            
+            const statsText = `
+📊 MESSAGE DATABASE STATS
+
+📨 Total Messages: ${stats.totalMessages}
+💾 Database Size: ${stats.dbSize}
+🔄 Storage Type: Hybrid (RAM + SQLite)
+⏳ Retention: 7 days
+
+✅ System Status: Active
+`.trim();
+            
+            await reply(statsText);
+            
+        } catch (error) {
+            await reply('❌ Error getting stats: ' + error.message);
+        }
+    }
+},
+ {
+    name: 'cleanmsgs',
+    aliases: ['cleanupmessages'],
+    category: 'owner',
+    description: 'Cleanup old messages from database',
+    usage: '.cleanmsgs <days>',
+    
+    execute: async (sock, message, args, context) => {
+        const { reply, senderIsSudo } = context;
+        
+        if (!senderIsSudo) {
+            return await reply('❌ This command is only for bot owners!');
+        }
+        
+        try {
+            const days = parseInt(args[1]) || 7;
+            
+            if (days < 1 || days > 365) {
+                return await reply('❌ Please specify days between 1-365');
+            }
+            
+            const statsBefore = messageStore.getStats();
+            await reply(`🗑️ Cleaning messages older than ${days} days...`);
+            
+            messageStore.cleanup(days);
+            
+            const statsAfter = messageStore.getStats();
+            const deleted = statsBefore.totalMessages - statsAfter.totalMessages;
+            
+            await reply(`✅ Cleanup complete!\n\n🗑️ Deleted: ${deleted} messages\n📨 Remaining: ${statsAfter.totalMessages}\n💾 Size: ${statsAfter.dbSize}`);
+            
+        } catch (error) {
+            await reply('❌ Error during cleanup: ' + error.message);
+        }
+    }
+}
+
+];
