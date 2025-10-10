@@ -104,7 +104,7 @@ const store = {
         if (this.messages[jid]) {
             const memMsg = this.messages[jid].find(m => m.key.id === id);
             if (memMsg) {
-                // console.log('✅ Message loaded from RAM');
+                
                 return memMsg;
             }
         }
@@ -112,7 +112,7 @@ const store = {
         // 💾 FALLBACK TO DATABASE (persistent - works after restart!)
         const dbMsg = messageStore.load(jid, id);
         if (dbMsg) {
-            // console.log('✅ Message loaded from database');
+            
             return dbMsg;
         }
         
