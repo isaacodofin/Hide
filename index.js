@@ -38,6 +38,12 @@ import { parsePhoneNumber } from "libphonenumber-js";
 import { rmSync, existsSync } from 'fs';
 import { join } from 'path';
 
+
+// === AUTO SHUTDOWN ON TOO MANY RECONNECTS ===
+global.connectionRetries = 0;
+const MAX_RETRIES = 3; // You can increase or decrease this
+
+
 // Create a store object with required methods
 console.log(chalk.cyan('┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓'))
 console.log(chalk.cyan('┃') + chalk.white.bold('          🤖 GIFT MD BOT STARTING...        ') + chalk.cyan(' ┃'))
@@ -287,6 +293,7 @@ phoneNumber = phoneNumber.replace(/[^0-9]/g, '');
     XeonBotInc.ev.on('connection.update', async (s) => {
         const { connection, lastDisconnect } = s
         if (connection == "open") {
+            global.connectionRetries = 0;
             console.log(chalk.green('┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓'))
             console.log(chalk.green('┃') + chalk.white.bold('          ✅ CONNECTION SUCCESSFUL!        ') + chalk.green('┃'))
             console.log(chalk.green('┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛'))
@@ -327,32 +334,44 @@ phoneNumber = phoneNumber.replace(/[^0-9]/g, '');
             initializeCallHandler(XeonBotInc);
             
         } else if (connection === "close") {
-            let reason = new Boom(lastDisconnect?.error)?.output.statusCode
-            if (reason === DisconnectReason.badSession) {
-                console.log(`Bad Session File, Please Delete Session and Scan Again`);
-                clearSQLiteSession();
-            startXeonBotInc()
-            } else if (reason === DisconnectReason.connectionClosed) {
-                console.log("Connection closed, reconnecting....");
-                startXeonBotInc();
-            } else if (reason === DisconnectReason.connectionLost) {
-                console.log("Connection Lost from Server, reconnecting...");
-                startXeonBotInc();
-            } else if (reason === DisconnectReason.connectionReplaced) {
-                console.log("Connection Replaced, Another New Session Opened, Please Close Current Session First");
-                startXeonBotInc()
-            } else if (reason === DisconnectReason.loggedOut) {
-                console.log(`Device Logged Out, Please Scan Again And Run.`);
-                clearSQLiteSession();
-            startXeonBotInc()
-            } else if (reason === DisconnectReason.restartRequired) {
-                console.log("Restarting...");
-                startXeonBotInc()
-            } else if (reason === DisconnectReason.timedOut) {
-                console.log("Connection TimedOut, Reconnecting...");
-                startXeonBotInc()
-            } else XeonBotInc.end(`Unknown DisconnectReason: ${reason}|${connection}`)
-        }
+    const reason = new Boom(lastDisconnect?.error)?.output?.statusCode;
+    global.connectionRetries++;
+    console.log(chalk.yellow(`⚠️ Connection closed. Retry attempt ${global.connectionRetries}/${MAX_RETRIES}`));
+
+    if (global.connectionRetries >= MAX_RETRIES) {
+        console.log(chalk.red(`🚨 Too many reconnection attempts (${MAX_RETRIES}). Shutting down bot.`));
+        console.log(chalk.red('🛑 Please check your network or session files.'));
+        await delay(5000); // Give logs time to print
+        process.exit(1);
+    }
+
+    if (reason === DisconnectReason.badSession) {
+        console.log(`Bad Session File, Please Delete Session and Scan Again`);
+        clearSQLiteSession();
+        startXeonBotInc();
+    } else if (reason === DisconnectReason.connectionClosed) {
+        console.log("Connection closed, reconnecting....");
+        startXeonBotInc();
+    } else if (reason === DisconnectReason.connectionLost) {
+        console.log("Connection Lost from Server, reconnecting...");
+        startXeonBotInc();
+    } else if (reason === DisconnectReason.connectionReplaced) {
+        console.log("Connection Replaced, Another New Session Opened, Please Close Current Session First");
+        startXeonBotInc();
+    } else if (reason === DisconnectReason.loggedOut) {
+        console.log(`Device Logged Out, Please Scan Again And Run.`);
+        clearSQLiteSession();
+        startXeonBotInc();
+    } else if (reason === DisconnectReason.restartRequired) {
+        console.log("Restarting...");
+        startXeonBotInc();
+    } else if (reason === DisconnectReason.timedOut) {
+        console.log("Connection TimedOut, Reconnecting...");
+        startXeonBotInc();
+    } else {
+        XeonBotInc.end(`Unknown DisconnectReason: ${reason}|${connection}`);
+    }
+}
     })
 
     XeonBotInc.ev.on('creds.update', saveCreds)
