@@ -252,9 +252,9 @@ async function startXeonBotInc() {
     if (useMobile) throw new Error('Cannot use pairing code with mobile api')
 
     let phoneNumber
-    clearSQLiteSession();
+  /**  clearSQLiteSession();
     await delay(3099)
-    console.clear();
+    console.clear();*/
     if (process.stdin.isTTY) {
         // Interactive Mode - Show options
         console.log(chalk.grey('┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓'))
