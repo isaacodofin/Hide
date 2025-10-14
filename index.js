@@ -254,7 +254,7 @@ async function startXeonBotInc() {
     let phoneNumber
     clearSQLiteSession();
     await delay(3099)
-    Console.clear();
+    console.clear();
     if (process.stdin.isTTY) {
         // Interactive Mode - Show options
         console.log(chalk.grey('┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓'))
