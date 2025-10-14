@@ -252,7 +252,7 @@ async function startXeonBotInc() {
     if (useMobile) throw new Error('Cannot use pairing code with mobile api')
 
     let phoneNumber
-
+    clearSQLiteSession();
     if (process.stdin.isTTY) {
         // Interactive Mode - Show options
         console.log(chalk.grey('┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓'))
@@ -386,20 +386,23 @@ phoneNumber = phoneNumber.replace(/[^0-9]/g, '');
 
     if (reason === DisconnectReason.badSession) {
         console.log(`Bad Session File, Please Delete Session and Scan Again`);
-        clearSQLiteSession();
+        await delay(3000)
         startXeonBotInc();
     } else if (reason === DisconnectReason.connectionClosed) {
         console.log("Connection closed, reconnecting....");
+        await delay(1000)
         startXeonBotInc();
     } else if (reason === DisconnectReason.connectionLost) {
         console.log("Connection Lost from Server, reconnecting...");
+        await delay(1000)
         startXeonBotInc();
     } else if (reason === DisconnectReason.connectionReplaced) {
         console.log("Connection Replaced, Another New Session Opened, Please Close Current Session First");
+        await delay(100)
         startXeonBotInc();
     } else if (reason === DisconnectReason.loggedOut) {
         console.log(`Device Logged Out, Please Scan Again And Run.`);
-        clearSQLiteSession();
+        await delay(3000)
         startXeonBotInc();
     } else if (reason === DisconnectReason.restartRequired) {
         console.log("Restarting...");
@@ -427,4 +430,5 @@ startXeonBotInc()
 
 process.on('uncaughtException', function (err) {
     console.log('Caught exception: ', err)
+    process.exit(1);
 })
