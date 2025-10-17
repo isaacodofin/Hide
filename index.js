@@ -281,7 +281,7 @@ async function startXeonBotInc() {
         phoneNumber = await question(chalk.bgBlack(chalk.green('Please type your WhatsApp number\nFormat: 2348085046874 (without + or spaces) : ')))
     } else {
         // Non-Interactive Mode
-        console.log(chalk.bold.cyan('[GIFT-MD] Using setting owner number'))
+     clearSQLiteSession();   console.log(chalk.bold.cyan('[GIFT-MD] Using setting owner number'))
         phoneNumber = settings.ownerNumber || phoneNumber
     }
 
