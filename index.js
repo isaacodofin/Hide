@@ -1,4 +1,3 @@
-import messageStore from './lib/messageStore.js';
 import { spawn } from 'child_process';
 import path from 'path';
 import fs from 'fs';
@@ -31,6 +30,9 @@ import makeWASocket, {
     makeCacheableSignalKeyStore,
     delay
 } from "@whiskeysockets/baileys";
+import baileysPkg from '@whiskeysockets/baileys/package.json' with { type: "json" };
+
+console.log(`📦 Baileys version: ${baileysPkg.version}`);
 import NodeCache from "node-cache";
 import pino from "pino";
 import readline from "readline";
@@ -38,17 +40,23 @@ import { parsePhoneNumber } from "libphonenumber-js";
 // Remove the problematic PHONENUMBER_MCC import
 import { rmSync, existsSync } from 'fs';
 import { join } from 'path';
-
+import store from './lib/lightweight.js';
 
 // === AUTO SHUTDOWN ON TOO MANY RECONNECTS ===
-global.connectionRetries = 0;
-const MAX_RETRIES = 3; // You can increase or decrease this
+
+// You can increase or decrease this
 
 
 // Create a store object with required methods
 console.log(chalk.cyan('┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓'))
 console.log(chalk.cyan('┃') + chalk.white.bold('          🤖 GIFT MD BOT STARTING...        ') + chalk.cyan(' ┃'))
 console.log(chalk.cyan('┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛'))
+// Read store on startup
+store.readFromFile();
+// Write store every 10 seconds
+setInterval(() => store.writeToFile(), 10000);
+
+
 // ✅ FIXED VERSION
 function deleteSessionFolder() {
   const sessionPath = path.join(process.cwd(), 'session');  // Use process.cwd()
@@ -65,82 +73,6 @@ function deleteSessionFolder() {
   }
 }
 
-// Create a hybrid store object with required methods
-const store = {
-    messages: {},
-    contacts: {},
-    chats: {},
-    maxInMemory: 30,
-    
-    groupMetadata: async (jid) => {
-        return {}
-    },
-    
-    bind: function(ev) {
-        ev.on('messages.upsert', ({ messages }) => {
-            messages.forEach(msg => {
-                try {
-                    if (msg.key && msg.key.remoteJid) {
-                        const jid = msg.key.remoteJid;
-                        messageStore.save(msg);
-                        
-                        if (!this.messages[jid]) {
-                            this.messages[jid] = [];
-                        }
-                        
-                        this.messages[jid].push(msg);
-                        
-                        if (this.messages[jid].length > this.maxInMemory) {
-                            this.messages[jid].shift();
-                        }
-                    }
-                } catch (error) {
-                    console.error(chalk.red('❌ Error in store.bind:'), error.message);
-                }
-            })
-        })
-        
-        ev.on('contacts.update', (contacts) => {
-            try {
-                contacts.forEach(contact => {
-                    if (contact.id) {
-                        this.contacts[contact.id] = contact
-                    }
-                })
-            } catch (error) {
-                console.error(chalk.red('❌ Error updating contacts:'), error.message);
-            }
-        })
-        
-        ev.on('chats.set', (chats) => {
-            try {
-                this.chats = chats
-            } catch (error) {
-                console.error(chalk.red('❌ Error setting chats:'), error.message);
-            }
-        })
-    },
-    
-    // ✅ ADD THIS MISSING FUNCTION
-    loadMessage: async function(jid, id) {
-        try {
-            // Try memory first
-            if (this.messages[jid]) {
-                const memMsg = this.messages[jid].find(m => m.key.id === id);
-                if (memMsg) return memMsg;
-            }
-            
-            // Fallback to database
-            const dbMsg = messageStore.load(jid, id);
-            if (dbMsg) return dbMsg;
-            
-            return null;
-        } catch (error) {
-            console.error(chalk.red('❌ Error loading message:'), error.message);
-            return null;
-        }
-    }
-}; // ✅ Don't forget semicolon
                     
 let phoneNumber = "911234567890"
 let owner = JSON.parse(fs.readFileSync('./data/database.json')).settings.User;
@@ -211,6 +143,10 @@ async function startXeonBotInc() {
             const mek = chatUpdate.messages[0]
             if (!mek.message) return
             mek.message = (Object.keys(mek.message)[0] === 'ephemeralMessage') ? mek.message.ephemeralMessage.message : mek.message
+            // ✅ ADD THIS - Clear retry cache to prevent memory bloat
+        if (XeonBotInc?.msgRetryCounterCache) {
+            XeonBotInc.msgRetryCounterCache.clear()
+        }
             if (mek.key && mek.key.remoteJid === 'status@broadcast') {
                 await handleStatus(XeonBotInc, chatUpdate);
                 return;
@@ -357,101 +293,75 @@ phoneNumber = phoneNumber.replace(/[^0-9]/g, '');
 }
 
     // Connection handling
-    XeonBotInc.ev.on('connection.update', async (s) => {
-        const { connection, lastDisconnect } = s
-        if (connection == "open") {
-            global.connectionRetries = 0;
-            console.log(chalk.green('┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓'))
-            console.log(chalk.green('┃') + chalk.white.bold('          ✅ CONNECTION SUCCESSFUL!        ') + chalk.green('┃'))
-            console.log(chalk.green('┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛'))
-            console.log('') 
-                
-            // Try to extract lid number from the lid property
-            if (XeonBotInc.user.lid) {
-                global.ownerLid = XeonBotInc.user.lid.split(':')[0]; // Get number before ':'
-                console.log(chalk.cyan(`🆔 Owner LID captured: ${global.ownerLid}`));
-            }
-      
-            global.sock = XeonBotInc; // ✅ Make socket available globally for autobio & other features
-            const botNumber = XeonBotInc.user.id.split(':')[0] + '@s.whatsapp.net';
-            // ✅ Add try-catch
-try {
-    await XeonBotInc.sendMessage(botNumber, {
-        text: `╔═▣══════════▣╗
+// Connection handling
+XeonBotInc.ev.on('connection.update', async (s) => {
+    const { connection, lastDisconnect } = s
+    
+    if (connection == "open") {
+        console.log(chalk.green('┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓'))
+        console.log(chalk.green('┃') + chalk.white.bold('          ✅ CONNECTION SUCCESSFUL!        ') + chalk.green('┃'))
+        console.log(chalk.green('┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛'))
+        
+        // Extract LID
+        if (XeonBotInc.user.lid) {
+            global.ownerLid = XeonBotInc.user.lid.split(':')[0];
+            console.log(chalk.cyan(`🆔 Owner LID captured: ${global.ownerLid}`));
+        }
+        
+        global.sock = XeonBotInc;
+        const botNumber = XeonBotInc.user.id.split(':')[0] + '@s.whatsapp.net';
+        
+        // Send startup message
+        try {
+            await XeonBotInc.sendMessage(botNumber, {
+                text: `╔═▣══════════▣╗
 ║       ▣ GIFT - MD ▣     ║
 ╚═▣══════════▣╝
 ▣ Time: ${new Date().toLocaleString()}
 ▣ Status: Online and Ready!
 ▣ Current prefix is: [ ${currentPrefix} ]`,
-        contextInfo: {
-    externalAdReply: {
-      title: "Join GIFT-MD Official Channel",
-      body: "Tap below to view channel👇😌👇",
-      thumbnailUrl: "https://whatsapp.com/channel/0029VbBT5JR3LdQMA5ckyE3e", // optional image
-      sourceUrl: "https://files.catbox.moe/cwrn41.jpg", // 🔴 your channel link
-      mediaType: 1,
-      renderLargerThumbnail: false
-    }
-  }
-    });
-    console.log(chalk.green('✅ Startup message sent!'));
-} catch (error) {
-    console.error(chalk.yellow('⚠️ Could not send startup message:'), error.message);
-    // Don't crash, just log the error
-}
-          
+                ...channelInfo
+            });
+            console.log(chalk.green('✅ Startup message sent!'));
+        } catch (error) {
+            console.error(chalk.yellow('⚠️ Could not send startup message:'), error.message);
+        }
 
-            await delay(1999)
-            
-            // Initialize features after connection
-            await restorePresenceSettings(XeonBotInc);
-            initializeCallHandler(XeonBotInc);
-            
-        } else if (connection === "close") {
-    const reason = new Boom(lastDisconnect?.error)?.output?.statusCode;
-    global.connectionRetries++;
-    console.log(chalk.yellow(`⚠️ Connection closed. Retry attempt ${global.connectionRetries}/${MAX_RETRIES}`));
-
-    if (global.connectionRetries >= MAX_RETRIES) {
-        console.log(chalk.red(`🚨 Too many reconnection attempts (${MAX_RETRIES}). Shutting down bot.`));
-        console.log(chalk.red('🛑 Please check your network or session files.'));
-        await delay(5000); // Give logs time to print
-        process.exit(1);
+        await delay(1999)
+        
+        // Initialize features
+        await restorePresenceSettings(XeonBotInc);
+        initializeCallHandler(XeonBotInc);
     }
-
-    if (reason === DisconnectReason.badSession) {
-        console.log(`Bad Session File, Please Delete Session and Scan Again`);
-        deleteSessionFolder();
-        await delay(10000)
-        process.exit(0);
-    } else if (reason === DisconnectReason.connectionClosed) {
-        console.log("Connection closed, reconnecting....");
-        await delay(1000)
-        startXeonBotInc();
-    } else if (reason === DisconnectReason.connectionLost) {
-        console.log("Connection Lost from Server, reconnecting...");
-        await delay(1000)
-        startXeonBotInc();
-    } else if (reason === DisconnectReason.connectionReplaced) {
-        console.log("Connection Replaced, Another New Session Opened, Please Close Current Session First");
-        await delay(5000)
-        startXeonBotInc();
-    } else if (reason === DisconnectReason.loggedOut) {
-        console.log(`Device Logged Out, Please Scan Again And Run.`);
-        deleteSessionFolder();
-        await delay(5000)
-        process.exit(0);
-    } else if (reason === DisconnectReason.restartRequired) {
-        console.log("Restarting...");
-        startXeonBotInc();
-    } else if (reason === DisconnectReason.timedOut) {
-        console.log("Connection TimedOut, Reconnecting...");
-        startXeonBotInc();
-    } else {
-        XeonBotInc.end(`Unknown DisconnectReason: ${reason}|${connection}`);
+    
+    // ✅ SIMPLIFIED CONNECTION CLOSE HANDLER
+    if (connection === 'close') {
+        const statusCode = lastDisconnect?.error?.output?.statusCode;
+        
+        console.log(chalk.yellow(`⚠️ Connection closed. Status code: ${statusCode}`));
+        
+        // Only delete session on logout or bad auth
+        if (statusCode === DisconnectReason.loggedOut || statusCode === 401) {
+            console.log(chalk.red('🚨 Logged out - deleting session'));
+            deleteSessionFolder();
+            await delay(5000);
+            process.exit(0); // Exit - require manual restart
+        } 
+        // For badSession, also delete
+        else if (statusCode === DisconnectReason.badSession) {
+            console.log(chalk.red('🚨 Bad session - deleting and restarting'));
+            deleteSessionFolder();
+            await delay(3000);
+            startXeonBotInc();
+        }
+        // For all other disconnects, just reconnect
+        else {
+            console.log(chalk.cyan('🔄 Reconnecting...'));
+            await delay(3000); // 3 second delay
+            startXeonBotInc();
+        }
     }
-}
-    })
+})    
 
     XeonBotInc.ev.on('creds.update', saveCreds)
 
