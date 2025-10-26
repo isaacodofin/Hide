@@ -1,5 +1,6 @@
 //I'm coked 😭
-import messageStore from '../lib/messageStore.js';
+import Database from 'better-sqlite3';
+import chalk from 'chalk';
 import fs from 'fs';
 import  { jidNormalizedUser }  from '@whiskeysockets/baileys';
 import {
@@ -25,6 +26,368 @@ import { exec } from 'child_process';
 const execAsync = promisify(exec);
 import { downloadContentFromMessage } from '@whiskeysockets/baileys';
 import settings from '../settings.js';
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const messageStore = new Map();
+const TEMP_MEDIA_DIR = path.join(__dirname, '../tmp');
+const DB_PATH = path.join(__dirname, '../data/messageStore.db/ANTIEDIT.MS/antiedit_mStore.db');
+
+if (!fs.existsSync(TEMP_MEDIA_DIR)) {
+    fs.mkdirSync(TEMP_MEDIA_DIR, { recursive: true });
+}
+if (!fs.existsSync(path.dirname(DB_PATH))) {
+    fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
+}
+
+const db = new Database(DB_PATH);
+db.pragma('journal_mode = WAL');
+
+db.exec(`
+    CREATE TABLE IF NOT EXISTS messages (
+        messageId TEXT PRIMARY KEY,
+        content TEXT,
+        mediaType TEXT,
+        mediaPath TEXT,
+        sender TEXT,
+        groupId TEXT,
+        chatId TEXT,
+        timestamp TEXT
+    )
+`);
+
+function saveMessageToDB(messageId, data) {
+    try {
+        const stmt = db.prepare(`
+            INSERT OR REPLACE INTO messages (messageId, content, mediaType, mediaPath, sender, groupId, chatId, timestamp)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        `);
+        stmt.run(messageId, data.content, data.mediaType, data.mediaPath, data.sender, data.group, data.chatId, data.timestamp);
+    } catch (err) {
+        console.error('DB save error:', err);
+    }
+}
+
+function loadMessageFromDB(messageId) {
+    try {
+        const stmt = db.prepare('SELECT * FROM messages WHERE messageId = ?');
+        const row = stmt.get(messageId);
+        if (row) {
+            return {
+                content: row.content,
+                mediaType: row.mediaType,
+                mediaPath: row.mediaPath,
+                sender: row.sender,
+                group: row.groupId,
+                chatId: row.chatId,
+                timestamp: row.timestamp
+            };
+        }
+        return null;
+    } catch (err) {
+        console.error('DB load error:', err);
+        return null;
+    }
+}
+
+function deleteMessageFromDB(messageId) {
+    try {
+        const stmt = db.prepare('DELETE FROM messages WHERE messageId = ?');
+        stmt.run(messageId);
+    } catch (err) {
+        console.error('DB delete error:', err);
+    }
+}
+
+function loadAllMessagesFromDB() {
+    try {
+        const stmt = db.prepare('SELECT * FROM messages');
+        const rows = stmt.all();
+        rows.forEach(row => {
+            messageStore.set(row.messageId, {
+                content: row.content,
+                mediaType: row.mediaType,
+                mediaPath: row.mediaPath,
+                sender: row.sender,
+                group: row.groupId,
+                chatId: row.chatId,
+                timestamp: row.timestamp
+            });
+        });
+        
+    } catch (err) {
+        console.error('DB load all error:', err);
+    }
+}
+
+loadAllMessagesFromDB();
+
+const getFolderSizeInMB = (folderPath) => {
+    try {
+        const files = fs.readdirSync(folderPath);
+        let totalSize = 0;
+        for (const file of files) {
+            const filePath = path.join(folderPath, file);
+            if (fs.statSync(filePath).isFile()) {
+                totalSize += fs.statSync(filePath).size;
+            }
+        }
+        return totalSize / (1024 * 1024);
+    } catch (err) {
+        console.error('Error getting folder size:', err);
+        return 0;
+    }
+};
+
+const cleanTempFolderIfLarge = () => {
+    try {
+        const sizeMB = getFolderSizeInMB(TEMP_MEDIA_DIR);
+        if (sizeMB > 200) {
+            const files = fs.readdirSync(TEMP_MEDIA_DIR);
+            for (const file of files) {
+                const filePath = path.join(TEMP_MEDIA_DIR, file);
+                fs.unlinkSync(filePath);
+            }
+            
+        }
+    } catch (err) {
+        console.error('Temp cleanup error:', err);
+    }
+};
+
+setInterval(cleanTempFolderIfLarge, 60 * 1000);
+
+// ✅ FIXED: Store RAW message content BEFORE any processing
+async function storeMessage(sock, message) {
+    try {
+        const mode = getSetting('antiedit', 'off');
+        if (mode === 'off') return;
+
+        if (!message.key?.id) return;
+
+        const messageId = message.key.id;
+        const chatId = message.key.remoteJid;
+        const sender = message.key.participant || message.key.remoteJid;
+
+        let content = '';
+        let mediaType = '';
+        let mediaPath = '';
+
+        // ✅ PRIORITY: Extract RAW text FIRST (before command processing)
+        if (message.message?.conversation) {
+            content = message.message.conversation;
+        } else if (message.message?.extendedTextMessage?.text) {
+            content = message.message.extendedTextMessage.text;
+        } else if (message.message?.imageMessage?.caption) {
+            content = message.message.imageMessage.caption || '';
+            mediaType = 'image';
+        } else if (message.message?.videoMessage?.caption) {
+            content = message.message.videoMessage.caption || '';
+            mediaType = 'video';
+        } else if (message.message?.imageMessage) {
+            mediaType = 'image';
+            content = message.message.imageMessage.caption || '';
+            try {
+                const stream = await downloadContentFromMessage(message.message.imageMessage, 'image');
+                const chunks = [];
+                for await (const chunk of stream) {
+                    chunks.push(chunk);
+                }
+                const buffer = Buffer.concat(chunks);
+                mediaPath = path.join(TEMP_MEDIA_DIR, `edit_${messageId}.jpg`);
+                fs.writeFileSync(mediaPath, buffer);
+            } catch (err) {
+                console.error('Image download error:', err);
+            }
+        } else if (message.message?.videoMessage) {
+            mediaType = 'video';
+            content = message.message.videoMessage.caption || '';
+            try {
+                const stream = await downloadContentFromMessage(message.message.videoMessage, 'video');
+                const chunks = [];
+                for await (const chunk of stream) {
+                    chunks.push(chunk);
+                }
+                const buffer = Buffer.concat(chunks);
+                mediaPath = path.join(TEMP_MEDIA_DIR, `edit_${messageId}.mp4`);
+                fs.writeFileSync(mediaPath, buffer);
+            } catch (err) {
+                console.error('Video download error:', err);
+            }
+        } else if (message.message?.audioMessage) {
+            mediaType = 'audio';
+            const mime = message.message.audioMessage.mimetype || '';
+            const ext = mime.includes('mpeg') ? 'mp3' : (mime.includes('ogg') ? 'ogg' : 'mp3');
+            try {
+                const stream = await downloadContentFromMessage(message.message.audioMessage, 'audio');
+                const chunks = [];
+                for await (const chunk of stream) {
+                    chunks.push(chunk);
+                }
+                const buffer = Buffer.concat(chunks);
+                mediaPath = path.join(TEMP_MEDIA_DIR, `edit_${messageId}.${ext}`);
+                fs.writeFileSync(mediaPath, buffer);
+            } catch (err) {
+                console.error('Audio download error:', err);
+            }
+        }
+
+        const messageData = {
+            content,
+            mediaType,
+            mediaPath,
+            sender,
+            chatId,
+            group: chatId.endsWith('@g.us') ? chatId : null,
+            timestamp: new Date().toISOString()
+        };
+
+        messageStore.set(messageId, messageData);
+        saveMessageToDB(messageId, messageData);
+    } catch (err) {
+        console.error('storeMessage error (antiedit):', err);
+    }
+}
+
+// ✅ FIXED: Extract edited content from correct protocol path
+async function handleMessageEdit(sock, editedMessage) {
+    try {
+        const mode = getSetting('antiedit', 'off');
+        if (mode === 'off') return;
+
+        const messageId = editedMessage.key.id;
+        const editedBy = editedMessage.key.participant || editedMessage.key.remoteJid;
+        const editChatId = editedMessage.key.remoteJid;
+        const ownerNumber = sock.user.id.split(':')[0] + '@s.whatsapp.net';
+
+        if (editedBy.includes(sock.user.id) || editedBy === ownerNumber) return;
+
+        let original = messageStore.get(messageId);
+        if (!original) {
+            original = loadMessageFromDB(messageId);
+            if (!original) return;
+        }
+
+        // ✅ Extract edited content from protocolMessage
+        let editedContent = '';
+        const protocolMsg = editedMessage.message?.protocolMessage;
+        
+        if (protocolMsg?.editedMessage) {
+            if (protocolMsg.editedMessage.conversation) {
+                editedContent = protocolMsg.editedMessage.conversation;
+            } else if (protocolMsg.editedMessage.extendedTextMessage?.text) {
+                editedContent = protocolMsg.editedMessage.extendedTextMessage.text;
+            } else if (protocolMsg.editedMessage.imageMessage?.caption) {
+                editedContent = protocolMsg.editedMessage.imageMessage.caption;
+            } else if (protocolMsg.editedMessage.videoMessage?.caption) {
+                editedContent = protocolMsg.editedMessage.videoMessage.caption;
+            }
+        }
+
+        const sender = original.sender;
+        const senderName = sender.split('@')[0];
+        const isGroup = original.chatId?.endsWith('@g.us');
+        const groupName = isGroup ? (await sock.groupMetadata(original.chatId)).subject : '';
+
+        const time = new Date().toLocaleString('en-US', {
+            timeZone: 'Asia/Kolkata',
+            hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit',
+            day: '2-digit', month: '2-digit', year: 'numeric'
+        });
+
+        let text = `🔄 ANTIEDIT REPORT 🔄\n\n` +
+            `✏️ Edited By: @${editedBy.split('@')[0]}\n` +
+            `👤 Sender: @${senderName}\n` +
+            `📱 Number: ${sender}\n` +
+            `🕒 Time: ${time}\n`;
+
+        if (groupName) text += `👥 Group: ${groupName}\n`;
+
+        if (original.content) {
+            text += `\n📝 Original Message:\n${original.content}`;
+        } else {
+            text += `\n📝 Original Message:\n(Message was captured but had no text content)`;
+        }
+
+        if (editedContent) {
+            text += `\n\n✨ Edited To:\n${editedContent}`;
+        }
+
+        const mediaOptions = {
+            caption: `Edited ${original.mediaType}\nFrom: @${senderName}`,
+            mentions: [sender]
+        };
+
+        const sendTargets = [];
+
+        if (mode === 'dm') {
+            sendTargets.push(ownerNumber);
+        } else if (mode === 'inbox') {
+            if (!isGroup) {
+                sendTargets.push(original.chatId);
+            }
+        } else if (mode === 'group') {
+            if (isGroup) {
+                sendTargets.push(original.chatId);
+            }
+        } else if (mode === 'all') {
+            sendTargets.push(ownerNumber);
+            sendTargets.push(original.chatId);
+        }
+
+        for (const target of sendTargets) {
+            try {
+                await sock.sendMessage(target, {
+                    text,
+                    mentions: [editedBy, sender]
+                });
+
+                if (original.mediaType && fs.existsSync(original.mediaPath)) {
+                    switch (original.mediaType) {
+                        case 'image':
+                            await sock.sendMessage(target, {
+                                image: { url: original.mediaPath },
+                                ...mediaOptions
+                            });
+                            break;
+                        case 'video':
+                            await sock.sendMessage(target, {
+                                video: { url: original.mediaPath },
+                                ...mediaOptions
+                            });
+                            break;
+                        case 'audio':
+                            await sock.sendMessage(target, {
+                                audio: { url: original.mediaPath },
+                                mimetype: 'audio/mpeg',
+                                ptt: false,
+                                ...mediaOptions
+                            });
+                            break;
+                    }
+                }
+            } catch (err) {
+                console.error(`Error sending to ${target}:`, err);
+            }
+        }
+
+        if (original.mediaPath && fs.existsSync(original.mediaPath)) {
+            try {
+                fs.unlinkSync(original.mediaPath);
+            } catch (err) {
+                console.error('Media cleanup error:', err);
+            }
+        }
+
+        messageStore.delete(messageId);
+        deleteMessageFromDB(messageId);
+
+    } catch (err) {
+        console.error('handleMessageEdit error:', err);
+    }
+}
+
 
 function extractMentionedJid(message) {
 
@@ -740,7 +1103,7 @@ await context.react('🥳');
             }, { quoted: m });
         }
     }
-},
+},/***
      {
 
     name: 'sudo',
@@ -757,7 +1120,7 @@ await context.react('🥳');
 
         const { chatId, reply, react, senderIsSudo } = context;
 
-        const senderJid = message.key.participant || message.key.remoteJid;
+        const senderJid = message.key.participantPn || message.key.remoteJid;
 
         const ownerJid = settings.ownerNumber + '@s.whatsapp.net';
 
@@ -897,7 +1260,7 @@ await react('😱');
 
     }
 
-},
+},*/
 {
     name: 'broadcast',
     description: 'Send message to all group members individually via DM',
@@ -1234,76 +1597,201 @@ Bot will restart to apply changes...`);
             }
         }
    },
-  {
-    name: 'msgstats',
-    aliases: ['messagestats', 'dbstats'],
+    {
+    name: 'sudo',
+    aliases: ['admin'],
     category: 'owner',
-    description: 'Get message database statistics',
-    usage: '.msgstats',
-    
+    description: 'Manage sudo users',
+    usage: '.sudo add/del/list [@user|number]',
     execute: async (sock, message, args, context) => {
-        const { reply, senderIsSudo } = context;
+        const { chatId, reply, react } = context;
         
-        if (!senderIsSudo) {
-            return await reply('❌ This command is only for bot owners!');
+        // Get sender JID (handles both LID and phone format)
+        const senderJid = message.key.participant || message.key.participantPn || message.key.remoteJid;
+        const ownerJid = settings.ownerNumber + '@s.whatsapp.net';
+        
+        // Check if sender is owner (compare cleaned versions)
+        const senderClean = senderJid.replace('@s.whatsapp.net', '').replace('@lid', '');
+        const ownerClean = settings.ownerNumber;
+        const isOwner = message.key.fromMe || senderClean === ownerClean;
+        
+        // Check if sender is sudo
+        const senderIsSudo = isSudo(senderJid);
+        
+        console.log(chalk.blue('🔍 Sudo command debug:'));
+        console.log('  Sender JID:', senderJid);
+        console.log('  Sender Clean:', senderClean);
+        console.log('  Owner Clean:', ownerClean);
+        console.log('  Is Owner:', isOwner);
+        console.log('  Is Sudo:', senderIsSudo);
+
+        // Remove command name if included in args
+        const cleanArgs = args[0] === 'sudo' ? args.slice(1) : args;
+
+        if (cleanArgs.length < 1) {
+            return await reply('Usage:\n.sudo add <user|number>\n.sudo del <user|number>\n.sudo list');
         }
+
+        const sub = cleanArgs[0].toLowerCase();
+
+        if (!['add', 'del', 'remove', 'list'].includes(sub)) {
+            return await reply('Usage:\n.sudo add <user|number>\n.sudo del <user|number>\n.sudo list');
+        }
+
+        if (sub === 'list') {
+            await react('📋');
+            const list = getSudo();
+            
+            if (list.length === 0) {
+                return await reply('No additional sudo users set.\n\nNote: Owner has permanent sudo privileges.');
+            }
+            
+            // Clean and format the list
+            const text = list.map((j, i) => {
+                const clean = j.replace('@s.whatsapp.net', '').replace('@lid', '');
+                return `${i + 1}. @${clean}`;
+            }).join('\n');
+            
+            return await reply(
+                `👥 Sudo Users:\n\n${text}\n\nNote: Owner (@${settings.ownerNumber}) has permanent sudo privileges.`,
+                { mentions: list }
+            );
+        }
+
+        // Only owner or sudo can add/remove
+        if (!isOwner && !senderIsSudo) {
+            await react('❌');
+            return await reply('❌ Only owner or sudo users can manage sudo list!');
+        }
+
+        // For add/del commands, we need a target
+        if (cleanArgs.length < 2) {
+            await react('💫');
+            return await reply(`Please provide a user to ${sub}.\nExample: .sudo ${sub} @user or .sudo ${sub} 2348085046874`);
+        }
+
+        // Extract target JID
+        let targetJid = null;
         
-        try {
-            const stats = messageStore.getStats();
-            
-            const statsText = `
-📊 MESSAGE DATABASE STATS
+        // Check for mentioned user
+        if (message.message?.extendedTextMessage?.contextInfo?.mentionedJid) {
+            targetJid = message.message.extendedTextMessage.contextInfo.mentionedJid[0];
+        }
+        // Check for quoted message
+        else if (message.message?.extendedTextMessage?.contextInfo?.participant) {
+            targetJid = message.message.extendedTextMessage.contextInfo.participant;
+        }
+        // Try to parse phone number from text
+        else {
+            const phoneNumber = cleanArgs[1].replace(/\D/g, '');
+            if (phoneNumber && phoneNumber.length >= 7) {
+                targetJid = phoneNumber + '@s.whatsapp.net';
+            }
+        }
 
-📨 Total Messages: ${stats.totalMessages}
-💾 Database Size: ${stats.dbSize}
-🔄 Storage Type: Hybrid (RAM + SQLite)
-⏳ Retention: 7 days
+        if (!targetJid) {
+            return await reply('Please mention a user or provide a valid phone number.');
+        }
 
-✅ System Status: Active
-`.trim();
+        console.log(chalk.yellow('🎯 Target JID:'), targetJid);
+
+        if (sub === 'add') {
+            await react('➕');
             
-            await reply(statsText);
+            // Check if target is owner
+            const targetClean = targetJid.replace('@s.whatsapp.net', '').replace('@lid', '');
+            if (targetClean === ownerClean) {
+                return await reply('Owner already has permanent sudo privileges.');
+            }
             
-        } catch (error) {
-            await reply('❌ Error getting stats: ' + error.message);
+            const ok = addSudo(targetJid);
+            const displayNumber = targetClean;
+            
+            if (ok) {
+                return await reply(`✅ Added sudo: @${displayNumber}`, { mentions: [targetJid] });
+            } else {
+                return await reply(`⚠️ User @${displayNumber} is already a sudo user!`, { mentions: [targetJid] });
+            }
+        }
+
+        if (sub === 'del' || sub === 'remove') {
+            await react('➖');
+            
+            // Check if target is owner
+            const targetClean = targetJid.replace('@s.whatsapp.net', '').replace('@lid', '');
+            if (targetClean === ownerClean) {
+                return await reply('❌ Owner cannot be removed from sudo privileges.');
+            }
+            
+            const ok = removeSudo(targetJid);
+            const displayNumber = targetClean;
+            
+            return await reply(ok ? `✅ Removed sudo: @${displayNumber}` : `❌ User @${displayNumber} is not in sudo list`, { mentions: [targetJid] });
         }
     }
 },
- {
-    name: 'cleanmsgs',
-    aliases: ['cleanupmessages'],
+    {
+    name: 'antiedit',
+    aliases: ['ae'],
     category: 'owner',
-    description: 'Cleanup old messages from database',
-    usage: '.cleanmsgs <days>',
-    
+    description: 'Configure antiedit feature to track message edits',
+    usage: '.antiedit [off/dm/inbox/group/all]',
     execute: async (sock, message, args, context) => {
-        const { reply, senderIsSudo } = context;
-        
-        if (!senderIsSudo) {
-            return await reply('❌ This command is only for bot owners!');
+        const { chatId, reply, isFromOwner, senderIsSudo } = context;
+
+        if (!isFromOwner && !senderIsSudo) {
+            return await reply('Only the bot owner can use this command.');
         }
-        
-        try {
-            const days = parseInt(args[1]) || 7;
+
+        const currentMode = getSetting('antiedit', 'off');
+        const newMode = args[1]?.toLowerCase();
+
+        if (!newMode) {
+            const dbCount = db.prepare('SELECT COUNT(*) as count FROM messages').get().count;
+            const ramCount = messageStore.size;
             
-            if (days < 1 || days > 365) {
-                return await reply('❌ Please specify days between 1-365');
-            }
-            
-            const statsBefore = messageStore.getStats();
-            await reply(`🗑️ Cleaning messages older than ${days} days...`);
-            
-            messageStore.cleanup(days);
-            
-            const statsAfter = messageStore.getStats();
-            const deleted = statsBefore.totalMessages - statsAfter.totalMessages;
-            
-            await reply(`✅ Cleanup complete!\n\n🗑️ Deleted: ${deleted} messages\n📨 Remaining: ${statsAfter.totalMessages}\n💾 Size: ${statsAfter.dbSize}`);
-            
-        } catch (error) {
-            await reply('❌ Error during cleanup: ' + error.message);
+            const modeEmoji = {
+                'off': '❌',
+                'dm': '📨',
+                'inbox': '📥',
+                'group': '👥',
+                'all': '🌐'
+            };
+
+            return await reply(
+                `ANTIEDIT SETUP\n\n` +
+                `Current Mode: ${modeEmoji[currentMode] || '❓'} ${currentMode}\n` +
+                `📊 Messages in RAM: ${ramCount}\n` +
+                `💾 Messages in DB: ${dbCount}\n\n` +
+                `Options:\n` +
+                `• off - Disable\n` +
+                `• dm - Send to owner DM\n` +
+                `• inbox - Repost in same chat (PM only)\n` +
+                `• group - Repost in same chat (groups only)\n` +
+                `• all - Repost everywhere`
+            );
         }
+
+        const validModes = ['off', 'dm', 'inbox', 'group', 'all'];
+
+        if (!validModes.includes(newMode)) {
+            return await reply(`Invalid mode. Valid options: ${validModes.join(', ')}`);
+        }
+
+        updateSetting('antiedit', newMode);
+
+        const modeMessages = {
+            'off': '❌ Antiedit disabled',
+            'dm': '📨 Antiedit enabled - Sending to owner DM',
+            'inbox': '📥 Antiedit enabled - Reposting in PM inbox',
+            'group': '👥 Antiedit enabled - Reposting in groups',
+            'all': '🌐 Antiedit enabled - Reposting everywhere'
+        };
+
+        return await reply(modeMessages[newMode]);
     }
-}
+};
+
 
 ];
+export { storeMessage, handleMessageEdit };
