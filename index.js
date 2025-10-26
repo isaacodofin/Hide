@@ -1,4 +1,3 @@
-import { useSQLiteAuthState, clearSQLiteSession } from './lib/sqliteAuth.js';
 import messageStore from './lib/messageStore.js';
 import { spawn } from 'child_process';
 import path from 'path';
@@ -18,6 +17,7 @@ import PhoneNumber from 'awesome-phonenumber';
 import { imageToWebp, videoToWebp, writeExifImg, writeExifVid } from './lib/exif.js';
 import { smsg, isUrl, generateMessageTag, getBuffer, getSizeMedia, fetchJson, sleep, reSize } from './lib/myfunc.js';
 import makeWASocket, {
+    useMultiFileAuthState,
     DisconnectReason, 
     fetchLatestBaileysVersion,
     generateForwardMessageContent,
@@ -49,78 +49,99 @@ const MAX_RETRIES = 3; // You can increase or decrease this
 console.log(chalk.cyan('┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓'))
 console.log(chalk.cyan('┃') + chalk.white.bold('          🤖 GIFT MD BOT STARTING...        ') + chalk.cyan(' ┃'))
 console.log(chalk.cyan('┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛'))
+// ✅ FIXED VERSION
+function deleteSessionFolder() {
+  const sessionPath = path.join(process.cwd(), 'session');  // Use process.cwd()
+  
+  if (fs.existsSync(sessionPath)) {
+    try {
+      fs.rmSync(sessionPath, { recursive: true, force: true });
+      console.log(chalk.green('✅ Session folder deleted successfully.'));
+    } catch (err) {
+      console.error(chalk.red('❌ Error deleting session folder:'), err);
+    }
+  } else {
+    console.log(chalk.yellow('⚠️ No session folder found to delete.'));
+  }
+}
+
 // Create a hybrid store object with required methods
 const store = {
-    messages: {},     // In-memory cache (fast access)
+    messages: {},
     contacts: {},
     chats: {},
-    maxInMemory: 50,  // Keep only 50 recent messages per chat in RAM
+    maxInMemory: 30,
     
     groupMetadata: async (jid) => {
         return {}
     },
     
     bind: function(ev) {
-        // Handle message events
         ev.on('messages.upsert', ({ messages }) => {
             messages.forEach(msg => {
-                if (msg.key && msg.key.remoteJid) {
-                    const jid = msg.key.remoteJid;
-                    
-                    // ✅ SAVE TO DATABASE (persistent)
-                    messageStore.save(msg);
-                    
-                    // ✅ KEEP IN MEMORY (fast access)
-                    if (!this.messages[jid]) {
-                        this.messages[jid] = [];
+                try {
+                    if (msg.key && msg.key.remoteJid) {
+                        const jid = msg.key.remoteJid;
+                        messageStore.save(msg);
+                        
+                        if (!this.messages[jid]) {
+                            this.messages[jid] = [];
+                        }
+                        
+                        this.messages[jid].push(msg);
+                        
+                        if (this.messages[jid].length > this.maxInMemory) {
+                            this.messages[jid].shift();
+                        }
                     }
-                    
-                    // Add to memory array
-                    this.messages[jid].push(msg);
-                    
-                    // Limit memory usage - keep only last N messages
-                    if (this.messages[jid].length > this.maxInMemory) {
-                        this.messages[jid].shift(); // Remove oldest
-                    }
+                } catch (error) {
+                    console.error(chalk.red('❌ Error in store.bind:'), error.message);
                 }
             })
         })
         
         ev.on('contacts.update', (contacts) => {
-            contacts.forEach(contact => {
-                if (contact.id) {
-                    this.contacts[contact.id] = contact
-                }
-            })
+            try {
+                contacts.forEach(contact => {
+                    if (contact.id) {
+                        this.contacts[contact.id] = contact
+                    }
+                })
+            } catch (error) {
+                console.error(chalk.red('❌ Error updating contacts:'), error.message);
+            }
         })
         
         ev.on('chats.set', (chats) => {
-            this.chats = chats
+            try {
+                this.chats = chats
+            } catch (error) {
+                console.error(chalk.red('❌ Error setting chats:'), error.message);
+            }
         })
     },
     
-    loadMessage: async (jid, id) => {
-        // 🚀 TRY MEMORY FIRST (instant)
-        if (this.messages[jid]) {
-            const memMsg = this.messages[jid].find(m => m.key.id === id);
-            if (memMsg) {
-                
-                return memMsg;
+    // ✅ ADD THIS MISSING FUNCTION
+    loadMessage: async function(jid, id) {
+        try {
+            // Try memory first
+            if (this.messages[jid]) {
+                const memMsg = this.messages[jid].find(m => m.key.id === id);
+                if (memMsg) return memMsg;
             }
-        }
-        
-        // 💾 FALLBACK TO DATABASE (persistent - works after restart!)
-        const dbMsg = messageStore.load(jid, id);
-        if (dbMsg) {
             
-            return dbMsg;
+            // Fallback to database
+            const dbMsg = messageStore.load(jid, id);
+            if (dbMsg) return dbMsg;
+            
+            return null;
+        } catch (error) {
+            console.error(chalk.red('❌ Error loading message:'), error.message);
+            return null;
         }
-        
-        // ❌ Not found
-        return null;
     }
-};
-
+}; // ✅ Don't forget semicolon
+                    
 let phoneNumber = "911234567890"
 let owner = JSON.parse(fs.readFileSync('./data/database.json')).settings.User;
 
@@ -157,17 +178,21 @@ const question = (text) => {
 
 async function startXeonBotInc() {
     let { version, isLatest } = await fetchLatestBaileysVersion()
-    const { state, saveCreds } = await useSQLiteAuthState('./data/session/auth.db', 'gift-md')
+    const { state, saveCreds } = await useMultiFileAuthState(`./session`)
     const msgRetryCounterCache = new NodeCache()
 
     const XeonBotInc = makeWASocket({
         version,
-        logger: pino({ level: 'fatal' }),
+        logger: pino({ level: 'silent' }),
         printQRInTerminal: !pairingCode,
         browser: ["Ubuntu", "Chrome", "20.0.04"],
-        auth:state,
+        auth: {
+            creds: state.creds,
+            keys: makeCacheableSignalKeyStore(state.keys, pino({ level: "fatal" }).child({ level: "fatal" })),
+        },
         markOnlineOnConnect: true,
         generateHighQualityLinkPreview: true,
+        syncFullHistory: false,
         getMessage: async (key) => {
             let jid = jidNormalizedUser(key.remoteJid)
             let msg = await store.loadMessage(jid, key.id)
@@ -176,6 +201,7 @@ async function startXeonBotInc() {
         msgRetryCounterCache,
         defaultQueryTimeoutMs: undefined,
     })
+
 
     store.bind(XeonBotInc.ev)
 
@@ -269,9 +295,9 @@ async function startXeonBotInc() {
 
         if (option === '2') {
             // Check if session exists
-            const sessionExists = fs.existsSync('./data/session/auth.db')
+            const sessionExists = fs.existsSync('./session')
             if (sessionExists) {
-                console.log(chalk.green('[GIFT-MD] ✅ Using existing Qslite session...'))
+                console.log(chalk.green('[GIFT-MD] ✅ Using existing session...'))
                 return // Skip pairing process
             } else {
                 console.log(chalk.bold.blue('⚠️  No existing session found, falling back to phone number input...'))
@@ -281,7 +307,7 @@ async function startXeonBotInc() {
         phoneNumber = await question(chalk.bgBlack(chalk.green('Please type your WhatsApp number\nFormat: 2348085046874 (without + or spaces) : ')))
     } else {
         // Non-Interactive Mode
-     clearSQLiteSession();   console.log(chalk.bold.cyan('[GIFT-MD] Using setting owner number'))
+     console.log(chalk.bold.cyan('[GIFT-MD] Using setting owner number'))
         phoneNumber = settings.ownerNumber || phoneNumber
     }
 
@@ -348,14 +374,16 @@ phoneNumber = phoneNumber.replace(/[^0-9]/g, '');
       
             global.sock = XeonBotInc; // ✅ Make socket available globally for autobio & other features
             const botNumber = XeonBotInc.user.id.split(':')[0] + '@s.whatsapp.net';
-            await XeonBotInc.sendMessage(botNumber, {text:`╔═▣══════════▣╗
+            // ✅ Add try-catch
+try {
+    await XeonBotInc.sendMessage(botNumber, {
+        text: `╔═▣══════════▣╗
 ║       ▣ GIFT - MD ▣     ║
 ╚═▣══════════▣╝
 ▣ Time: ${new Date().toLocaleString()}
 ▣ Status: Online and Ready!
-▣ Current prefix is: [ ${currentPrefix} ]
-▣ ✅Do ur best to join below channel`,
-  contextInfo: {
+▣ Current prefix is: [ ${currentPrefix} ]`,
+        contextInfo: {
     externalAdReply: {
       title: "Join GIFT-MD Official Channel",
       body: "Tap below to view channel👇😌👇",
@@ -365,7 +393,12 @@ phoneNumber = phoneNumber.replace(/[^0-9]/g, '');
       renderLargerThumbnail: false
     }
   }
-});
+    });
+    console.log(chalk.green('✅ Startup message sent!'));
+} catch (error) {
+    console.error(chalk.yellow('⚠️ Could not send startup message:'), error.message);
+    // Don't crash, just log the error
+}
           
 
             await delay(1999)
@@ -388,8 +421,9 @@ phoneNumber = phoneNumber.replace(/[^0-9]/g, '');
 
     if (reason === DisconnectReason.badSession) {
         console.log(`Bad Session File, Please Delete Session and Scan Again`);
-        await delay(3000)
-        startXeonBotInc();
+        deleteSessionFolder();
+        await delay(10000)
+        process.exit(0);
     } else if (reason === DisconnectReason.connectionClosed) {
         console.log("Connection closed, reconnecting....");
         await delay(1000)
@@ -400,12 +434,13 @@ phoneNumber = phoneNumber.replace(/[^0-9]/g, '');
         startXeonBotInc();
     } else if (reason === DisconnectReason.connectionReplaced) {
         console.log("Connection Replaced, Another New Session Opened, Please Close Current Session First");
-        await delay(100)
+        await delay(5000)
         startXeonBotInc();
     } else if (reason === DisconnectReason.loggedOut) {
         console.log(`Device Logged Out, Please Scan Again And Run.`);
-        await delay(3000)
-        startXeonBotInc();
+        deleteSessionFolder();
+        await delay(5000)
+        process.exit(0);
     } else if (reason === DisconnectReason.restartRequired) {
         console.log("Restarting...");
         startXeonBotInc();
@@ -428,9 +463,116 @@ phoneNumber = phoneNumber.replace(/[^0-9]/g, '');
     return XeonBotInc
 }
 
-startXeonBotInc()
+// ✅ FIXED
+startXeonBotInc().catch(err => {
+    console.error(chalk.red('❌ Failed to start bot:'), err);
+    console.log(chalk.yellow('🔄 Retrying in 10 seconds...'));
+    setTimeout(() => {
+        startXeonBotInc();
+    }, 10000);
+});
 
+// ... your existing code ...
+
+// ✅ FIXED VERSION
 process.on('uncaughtException', function (err) {
-    console.log('Caught exception: ', err)
-    process.exit(1);
-})
+    console.log(chalk.red('❌ Uncaught exception:'), err);
+    console.log(chalk.yellow('🔄 Attempting to restart bot...'));
+    
+    setTimeout(() => {
+        startXeonBotInc();
+    }, 5000);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    console.log(chalk.red('❌ Unhandled Rejection at:'), promise, 'reason:', reason);
+});
+
+                
+    // =================================
+// 🧹 MEMORY MANAGEMENT (Optimized for 716 MiB server)
+// =================================
+
+console.log(chalk.cyan('\n📊 Initializing memory optimization...'));
+console.log(chalk.cyan(`💾 Server RAM: 716 MiB | Available: ~430 MiB | Bot Limit: 320 MB`));
+
+// 1. Aggressive Garbage Collection (every 30 seconds for low RAM)
+setInterval(() => {
+    if (global.gc) {
+        global.gc();
+        const memUsage = process.memoryUsage();
+        const rss = (memUsage.rss / 1024 / 1024).toFixed(2);
+        const heapUsed = (memUsage.heapUsed / 1024 / 1024).toFixed(2);
+        
+        console.log(chalk.cyan(`🧹 GC completed | RAM: ${rss} MB | Heap: ${heapUsed} MB`));
+    } else {
+        //console.log(chalk.yellow('⚠️ Garbage collection not available. Start with: node --expose-gc index.js'));
+    }
+}, 30_000); // Every 30 seconds (more frequent for low RAM)
+
+// 2. Memory Monitoring with 3-tier warning system
+setInterval(() => {
+    const memUsage = process.memoryUsage();
+    const rss = memUsage.rss / 1024 / 1024;
+    const heapUsed = memUsage.heapUsed / 1024 / 1024;
+    
+    // Log every 5 minutes for monitoring
+    const shouldLog = Date.now() % 300000 < 30000; // True once every 5 min
+    if (shouldLog) {
+        console.log(chalk.blue(`📊 Memory: RAM ${rss.toFixed(2)} MB | Heap ${heapUsed.toFixed(2)} MB`));
+    }
+    
+    // 🟡 Warning (200-280 MB)
+    if (rss >= 200 && rss < 280) {
+        console.log(chalk.yellow(`⚠️ RAM: ${rss.toFixed(2)} MB / 280 MB (Warning)`));
+    }
+    // 🟠 High (280-320 MB) - Force GC
+    else if (rss >= 280 && rss < 320) {
+        console.log(chalk.hex('#FFA500')(`🟠 High RAM: ${rss.toFixed(2)} MB / 320 MB`));
+        if (global.gc) {
+            console.log(chalk.cyan('🧹 Forcing garbage collection...'));
+            global.gc();
+        }
+    }
+    // 🔴 Critical (> 320 MB) - RESTART
+    else if (rss >= 320) {
+        console.log(chalk.red(`🚨 CRITICAL: ${rss.toFixed(2)} MB > 320 MB`));
+        console.log(chalk.red('🔄 Restarting to prevent server crash...'));
+        
+        if (global.sock) {
+            try { global.sock.end(); } catch (e) {}
+        }
+        
+        setTimeout(() => process.exit(1), 3000);
+    }
+}, 30_000);
+
+// 3. Aggressive store cleanup (every 3 minutes)
+setInterval(() => {
+    try {
+        let cleaned = 0;
+        
+        // Clean messages (keep only 30 per chat for low RAM)
+        Object.keys(store.messages).forEach(jid => {
+            if (store.messages[jid] && store.messages[jid].length > 30) {
+                const excess = store.messages[jid].length - 30;
+                store.messages[jid].splice(0, excess);
+                cleaned += excess;
+            }
+        });
+        
+        if (cleaned > 0) {
+            console.log(chalk.gray(`🗑️ Cleaned ${cleaned} messages | Freed ~${(cleaned * 0.01).toFixed(2)} MB`));
+        }
+        
+        // Force GC after cleanup
+        if (global.gc) {
+            global.gc();
+        }
+        
+    } catch (error) {
+        console.error(chalk.red('❌ Cleanup error:'), error.message);
+    }
+}, 180_000); // Every 3 minutes
+
+console.log(chalk.green('✅ Memory optimization enabled (Low RAM mode)\n'));           
