@@ -1,3 +1,6 @@
+import { storeMessage,storeMessageForDelete,storeMessageForEdit,handleMessageDelete, handleMessageEdit } from './lib/Helper.js';
+import chalk from 'chalk';
+import chatbotMemory from './lib/chatbotMemory.js'
 import settings from './settings.js';
 import { buildContext } from './lib/context.js';
 import { getCommandData, saveDatabase } from './lib/database.js';
@@ -70,12 +73,31 @@ const { messages, type } = messageUpdate;
 if (type !== 'notify') return;
 
 const message = messages[0];  
-    if (!message?.message) return;  
+    if (!message?.message) return;  if (message.message) {
+            await storeMessageForEdit(sock, message);
+               // 
+  // Store message for antidelete
+await storeMessage(sock, message);
+
+        }
+
+    if (message.message?.editedMessage || message.message?.protocolMessage?.type === 14) {
+    await handleMessageEdit(sock, message);
+    return;
+}
+    // Handle message revocation
+        if (message.message?.protocolMessage?.type === 0) {
+
+            await handleMessageRevocation(sock, message);
+
+            return;
+
+        }  
 
 const currentPrefix = global.prefix;
     
 const chatId = message.key.remoteJid;
-const senderId = message.key.participant || message.key.remoteJid;
+const senderId = message.key.participant || message.key.participantPn || message.key.participantLid || message.key.senderPn || message.key.senderLid || message.key.remoteJid;
 const isGroup = chatId.endsWith('@g.us');
 const isChannel = chatId.endsWith('@newsletter'); // Add this line
 const tempContext = buildContext(sock, message);
@@ -95,15 +117,19 @@ const contextSenderIsSudo = tempContext.senderIsSudo;
         message.message?.videoMessage?.caption?.trim() ||  
         '';  
        // === LOG ALL MESSAGES ===
-console.log(rainbow(`\n
-┏‎━━━━━━━━[GIFT-MD]‎━━━━━━━━┓
-┃ 📩 New Message
-┃ 📍 Chat: ${isGroup ? "𝗚𝗿𝗼𝘂𝗽" : isChannel ? "𝗖𝗵𝗮𝗻𝗻𝗲𝗹" : "𝗣𝗿𝗶𝘃𝗮𝘁𝗲"}
-┃ 🆔 Chatid: ${chatId}
-┃ 👤 Sender: ${senderId}
-┃ 💌 Text: ${rawText || "[N/A]"}
-┗‎━━━━━━━━━‎━━━━━━━━━‎━━━━━━┛\n`));
-    // Only log command usage  
+  console.log('\x1b[30m--------------------\x1b[0m');
+  console.log(
+    chalk.bgBlack.bold(rainbow(
+      `┏━━━━━━━━━━[GIFT-MD]━━━━━━━━━┓\n` +
+      ` 📩 New Message               \n` +
+      ` 📍 Chat: ${isGroup ? "Group" : isChannel ? "Channel" : "Private "}            \n` +
+      ` 🆔 Chatid: ${chatId}\n` +
+      ` 👤 Sender: ${senderId}\n` +
+      ` 💌 Text: ${rawText || "[bot]"}               \n`+
+ `┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛`)));
+
+
+       // Only log command usage  
     if (userMessage.startsWith(currentPrefix)) {  
         // ✅ FIXED: Reduced auto-reactions to avoid rate limits  
         try {  
@@ -165,7 +191,18 @@ console.log(rainbow(`\n
     if (!userMessage.startsWith(currentPrefix)) {  
         // ✅ FIXED: Reduced auto-reactions for channels  
         try {  
-            if (!isChannel) {  
+            if (!isChannel) { 
+   // ✅ CHATBOT HANDLER - Call chatbot if enabled
+        try {
+            const chatbotCommand = global.commands.get('chatbot');
+            if (chatbotCommand && chatbotCommand.handleChatbot) {
+                const context = buildContext(sock, message);
+                await chatbotCommand.handleChatbot(sock, message, context);
+            }
+        } catch (chatbotError) {
+            console.error('❌ Chatbot error:', chatbotError.message);
+        }
+   
                 await handleAutoReaction(sock, message);  await handleAutoread(sock, message);
 await handleAutoEmoji(sock, message);
             }  
