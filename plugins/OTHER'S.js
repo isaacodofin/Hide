@@ -12,7 +12,6 @@ import { dirname } from 'path';
 import { createCanvas } from '@napi-rs/canvas';
 import { downloadContentFromMessage } from "@whiskeysockets/baileys";
 import db from '../lib/database.js';
-import { getSetting, updateSetting } from '../lib/database.js';
 import { getSetting, updateSetting, getChatData, updateChatData, getCommandData, updateCommandData } from '../lib/database.js';
 import { requireAdmin } from '../lib/adminCheck.js';
 import { channelInfo } from '../lib/messageConfig.js';
