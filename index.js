@@ -128,6 +128,7 @@ const question = (text) => {
 }
 
 async function startXeonBotInc() {
+    loadEnvSession()
     let { version, isLatest } = await fetchLatestBaileysVersion()
     const { state, saveCreds } = await useMultiFileAuthState(`./data/session/auth.db`)
     const msgRetryCounterCache = new NodeCache()
