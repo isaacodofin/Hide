@@ -53,7 +53,7 @@ setInterval(() => store.writeToFile(), 10000);
 
 // ✅ FIXED VERSION
 function deleteSessionFolder() {
-  const sessionPath = path.join(process.cwd(), 'session');  // Use process.cwd()
+  const sessionPath = path.join(process.cwd(), 'data', 'session', 'auth.db');  // Use process.cwd()
   
   if (fs.existsSync(sessionPath)) {
     try {
@@ -104,7 +104,7 @@ const question = (text) => {
 
 async function startXeonBotInc() {
     let { version, isLatest } = await fetchLatestBaileysVersion()
-    const { state, saveCreds } = await useMultiFileAuthState(`./session`)
+    const { state, saveCreds } = await useMultiFileAuthState(`./data/session/auth.db`)
     const msgRetryCounterCache = new NodeCache()
 
     const XeonBotInc = makeWASocket({
