@@ -17,7 +17,7 @@ import { applyFontStyle } from './lib/database.js';
 import { channelInfo } from './lib/messageConfig.js';
 import db from './lib/database.js';
 import {rainbow, pastel} from './lib/color.js';
-console.log('[GIFT-MD] initializing executor 🚀');
+console.log(chalk.yellow('[GIFT-MD] initializing executor 🚀'));
 loadCommands();
 //.......................................................................................................................................................//
 // === GLOBALS ===
