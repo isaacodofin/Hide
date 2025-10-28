@@ -32,7 +32,7 @@ import makeWASocket, {
 } from "@whiskeysockets/baileys";
 import baileysPkg from '@whiskeysockets/baileys/package.json' with { type: "json" };
 
-console.log(`📦 Baileys version: ${baileysPkg.version}`);
+console.log(`[GIFT-MD] 📦 Baileys version: ${baileysPkg.version}`);
 import NodeCache from "node-cache";
 import pino from "pino";
 import readline from "readline";
