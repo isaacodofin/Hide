@@ -41,6 +41,31 @@ import { parsePhoneNumber } from "libphonenumber-js";
 import { rmSync, existsSync } from 'fs';
 import { join } from 'path';
 import store from './lib/lightweight.js';
+import dotenv from "dotenv";
+dotenv.config();
+
+function loadEnvSession() {
+    const envSession = process.env.SESSION_ID;
+    const sessionDir = path.join(process.cwd(), 'data', 'session', 'auth.db');  // Use process.cwd()
+
+    if (!envSession) return false; 
+    if (!fs.existsSync(sessionDir)) fs.mkdirSync(sessionDir, { recursive: true });
+    // The session should look like: JUNE-MD:base64string
+    if (!envSession.startsWith("JUNE-MD:")) {
+        console.log(chalk.red("❌ Invalid SESSION_ID format in .env (missing 'JUNE-MD:' prefix)"));
+        return false;
+    }
+    const base64Data = envSession.replace("JUNE-MD:", "").trim();
+    try {
+        const decoded = Buffer.from(base64Data, "base64").toString("utf8");
+        fs.writeFileSync(path.join(sessionDir, "creds.json"), decoded);
+        console.log(chalk.green("✅ Loaded session from .env successfully."));
+        return true;
+    } catch (e) {
+        console.log(chalk.red("❌ Failed to decode SESSION_ID from .env:"), e.message);
+        return false;
+    }
+            }
 // Create a store object with required methods
 console.log(chalk.cyan('┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓'))
 console.log(chalk.cyan('┃') + chalk.white.bold('          🤖 GIFT MD BOT STARTING...        ') + chalk.cyan(' ┃'))
