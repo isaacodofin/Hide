@@ -14,7 +14,7 @@ import { handleMessages, handleGroupParticipantUpdate, handleStatus, restorePres
 import awesomePhoneNumber from 'awesome-phonenumber';
 import PhoneNumber from 'awesome-phonenumber';
 import { imageToWebp, videoToWebp, writeExifImg, writeExifVid } from './lib/exif.js';
-import { smsg, isUrl, generateMessageTag, getBuffer, getSizeMedia, fetchJson, sleep, reSize } from './lib/myfunc.js';
+import { smsg, generateMessageTag, getBuffer, getSizeMedia, fetchJson, sleep, reSize,isUrl, getCurrentTime, getCurrentTimezone } from './lib/myfunc.js';
 import makeWASocket, {
     useMultiFileAuthState,
     DisconnectReason, 
@@ -44,32 +44,81 @@ import store from './lib/lightweight.js';
 import dotenv from "dotenv";
 dotenv.config();
 
-function loadEnvSession() {
+const envPath = path.resolve(process.cwd(), '.env');
+
+    function loadEnvSession() {
     const envSession = process.env.SESSION_ID;
-    const sessionDir = path.join(process.cwd(), 'data', 'session', 'auth.db');  // Use process.cwd()
+    const sessionDir = path.join(process.cwd(), 'data', 'session', 'auth.db');
 
     if (!envSession) return false; 
+
+    // Ensure session directory exists
     if (!fs.existsSync(sessionDir)) fs.mkdirSync(sessionDir, { recursive: true });
-    // The session should look like: JUNE-MD:base64string
-    if (!envSession.startsWith("JUNE-MD:")) {
-        console.log(chalk.red("❌ Invalid SESSION_ID format in .env (missing 'JUNE-MD:' prefix)"));
-        return false;
+
+    console.log(chalk.yellow('[GIFT-MD] Session found in .env!'));
+    console.log(chalk.green('[GIFT-MD] Downloading Session from .env'));
+
+    // Allow multiple known prefixes or none at all
+    const knownPrefixes = ["JUNE-MD:", "GIFT-MD:", "SESSION:", "MD:"];
+    let base64Data = envSession.trim();
+
+    // Remove any recognized prefix if present
+    for (const prefix of knownPrefixes) {
+        if (base64Data.startsWith(prefix)) {
+            base64Data = base64Data.replace(prefix, "").trim();
+            break;
+        }
     }
-    const base64Data = envSession.replace("JUNE-MD:", "").trim();
+
     try {
+        // Decode and write to creds.json
         const decoded = Buffer.from(base64Data, "base64").toString("utf8");
+
+        // Optional validation: must contain {"noiseKey": or something typical from Baileys session
+        if (!decoded.includes('"noiseKey"')) {
+            console.log(chalk.red("❌ Decoded session doesn't look valid (missing noiseKey)."));
+            return false;
+        }
+
         fs.writeFileSync(path.join(sessionDir, "creds.json"), decoded);
-        console.log(chalk.green("✅ Loaded session from .env successfully."));
+        console.log(chalk.green("[GIFT-MD] ✅ Successfully downloaded session from .env!"));
         return true;
     } catch (e) {
         console.log(chalk.red("❌ Failed to decode SESSION_ID from .env:"), e.message);
         return false;
     }
+}
+
+
+// ✅ Automatically restart if .env changes (SESSION_ID or other variables)
+
+function checkEnvStatus() {
+    try {
+        console.log(chalk.green("╔═══════════════════════════════════════╗"));
+        console.log(chalk.green("║       .env file watcher active.       ║"));
+        console.log(chalk.green("╚═══════════════════════════════════════╝"));
+
+        // Watch for changes in the .env file
+        fs.watch(envPath, { persistent: false }, (eventType, filename) => {
+            if (filename && eventType === 'change') {
+                console.log(chalk.bgRed.black('================================================='));
+                console.log(chalk.white.bgRed('🚨 .env file change detected!'));
+                console.log(chalk.white.bgRed('Restarting bot to apply new configuration (e.g., SESSION_ID).'));
+                console.log(chalk.red.bgBlack('================================================='));
+                
+                process.exit(1); // triggers auto restart
             }
+        });
+    } catch (err) {
+        console.log(chalk.red(`❌ Failed to setup .env watcher: ${err.message}`));
+    }
+}
+
+checkEnvStatus(); 
 // Create a store object with required methods
-console.log(chalk.cyan('┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓'))
-console.log(chalk.cyan('┃') + chalk.white.bold('          🤖 GIFT MD BOT STARTING...        ') + chalk.cyan(' ┃'))
-console.log(chalk.cyan('┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛'))
+console.log(chalk.cyan('┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓'))
+console.log(chalk.cyan('┃') + chalk.white.bold('        🤖 GIFT MD BOT STARTING...') +chalk.cyan('      ┃'))
+console.log(chalk.cyan('┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛'))
 // Read store on startup
 store.readFromFile();
 // Write store every 10 seconds
@@ -111,7 +160,8 @@ global.dev = "2348085046874";
 global.devgit = "https://github.com/isaacfont461461-cmd/OfficialGift-Md";
 global.devyt = "@officialGift-md";
 global.ytch = "Mr Unique Hacker";
-
+global.getCurrentTime = getCurrentTime;
+global.getCurrentTimezone = getCurrentTimezone;
 
 const pairingCode = !!phoneNumber || process.argv.includes("--pairing-code")
 const useMobile = process.argv.includes("--mobile")
@@ -318,9 +368,9 @@ XeonBotInc.ev.on('connection.update', async (s) => {
     const { connection, lastDisconnect } = s
     
     if (connection == "open") {
-        console.log(chalk.green('┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓'))
-        console.log(chalk.green('┃') + chalk.white.bold('          ✅ CONNECTION SUCCESSFUL!        ') + chalk.green('┃'))
-        console.log(chalk.green('┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛'))
+        console.log(chalk.green('┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓'))
+        console.log(chalk.green('┃') + chalk.white.bold('        ✅ CONNECTION SUCCESSFUL!     ') + chalk.green('  ┃'))
+        console.log(chalk.green('┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛'))
         
         // Extract LID
         if (XeonBotInc.user.lid) {
