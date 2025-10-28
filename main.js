@@ -73,11 +73,11 @@ const { messages, type } = messageUpdate;
 if (type !== 'notify') return;
 
 const message = messages[0];  
-    if (!message?.message) return;  if (message.message) {
-            await storeMessageForEdit(sock, message);
+    if (!message?.message) return;  /**if (message.message) {
+            //await storeMessageForEdit(sock, message);
                // 
   // Store message for antidelete
-await storeMessage(sock, message);
+//await storeMessage(sock, message);
 
         }
 
@@ -92,7 +92,7 @@ await storeMessage(sock, message);
 
             return;
 
-        }  
+        }  */
 
 const currentPrefix = global.prefix;
     
