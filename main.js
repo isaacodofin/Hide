@@ -1,4 +1,3 @@
-
 import chalk from 'chalk';
 import chatbotMemory from './lib/chatbot.js'
 import settings from './settings.js';
@@ -93,16 +92,20 @@ const message = messages[0];
             return;
 
         }  */
+    
 
 const currentPrefix = global.prefix;
     
-const chatId = message.key.remoteJid;
-const senderId = message.key.participant || message.key.participantPn || message.key.participantLid || message.key.senderPn || message.key.senderLid || message.key.remoteJid;
+const chatId = message.key.remoteJid||
+message.key.remoteJidAlt;
+  
+const senderId = message.key.participantAlt || message.key.participant;
+const pushname = message.pushName || "Unknown User";
 const isGroup = chatId.endsWith('@g.us');
 const isChannel = chatId.endsWith('@newsletter'); // Add this line
 const tempContext = buildContext(sock, message);
 const contextSenderIsSudo = tempContext.senderIsSudo;
-          
+const time = global.getCurrentTime('time2');         
     const userMessage = (  
         message.message?.conversation?.trim() ||  
         message.message?.extendedTextMessage?.text?.trim() ||  
@@ -121,8 +124,9 @@ const contextSenderIsSudo = tempContext.senderIsSudo;
   console.log(
     chalk.bgBlack.bold(rainbow(
       `┏━━━━━━━━━━[GIFT-MD]━━━━━━━━━┓\n` +
-      ` 📩 New Message               \n` +
+      ` 📩 New Message: [${time}]     \n` +
       ` 📍 Chat: ${isGroup ? "Group" : isChannel ? "Channel" : "Private "}            \n` +
+      ` 📥 From: [${pushname}]\n`+
       ` 🆔 Chatid: ${chatId}\n` +
       ` 👤 Sender: ${senderId}\n` +
       ` 💌 Text: ${rawText || "[bot]"}               \n`+
@@ -215,7 +219,7 @@ await handleAutoEmoji(sock, message);
         await handleAutoRecordType(sock, chatId);  
           
         if (isGroup || isChannel) {  // Add channel support here  
-            const adminStatus = await isAdmin(sock, chatId, senderId, message);  
+            const adminStatus = await isAdmin(sock, chatId, senderId);  
             const context = buildContext(sock, message, { isAdminCheck: true, adminStatus });  
             await handleMessageCases(sock, message, context, false);  
               
@@ -272,14 +276,14 @@ if (isChannel) {
     let isSenderAdmin = false;  
     let isBotAdmin = false;  
 
-    if (isGroup || isChannel) {  // Add channel support here  
-const adminStatus = await isAdmin(sock, chatId, senderId, message);  
+    if (isGroup) {  // Add channel support here  
+const adminStatus = await isAdmin(sock, chatId, senderId);  
 isSenderAdmin = adminStatus.isSenderAdmin;  
 isBotAdmin = adminStatus.isBotAdmin;
 
 }
 
-if ((isGroup || isChannel) && isAdminCommand) {  
+if ((isGroup) && isAdminCommand) {  
         if (!isBotAdmin) {  
             await sock.sendMessage(chatId, {   
                 text: '❌ Please make the bot an admin to use admin commands.',   
@@ -333,7 +337,7 @@ console.log('📊 messageCount.json not found, assuming public mode');
         let command = commands.get(commandName) || aliases.get(commandName);  
 
         if (command) {  
-            const adminStatus = (isGroup || isChannel) ? await isAdmin(sock, chatId, senderId, message) : {};  
+            const adminStatus = (isGroup || isChannel) ? await isAdmin(sock, chatId, senderId) : {};  
             const context = buildContext(sock, message, { isAdminCheck: true, adminStatus });  
 // ✅ FIXED: Execute command without auto-reactions to avoid //
             
