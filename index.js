@@ -132,7 +132,7 @@ function deleteSessionFolder() {
   if (fs.existsSync(sessionPath)) {
     try {
       fs.rmSync(sessionPath, { recursive: true, force: true });
-      console.log(chalk.green('✅ Session folder deleted successfully.'));
+      console.log(chalk.green('[GIFT-MD] ✅ Session folder deleted successfully.'));
     } catch (err) {
       console.error(chalk.red('❌ Error deleting session folder:'), err);
     }
@@ -375,7 +375,7 @@ XeonBotInc.ev.on('connection.update', async (s) => {
         // Extract LID
         if (XeonBotInc.user.lid) {
             global.ownerLid = XeonBotInc.user.lid.split(':')[0];
-            console.log(chalk.cyan(`🆔 Owner LID captured: ${global.ownerLid}`));
+            console.log(chalk.cyan(`[GIFT-MD] 🆔 User LID captured: ${global.ownerLid}`));
         }
         
         global.sock = XeonBotInc;
@@ -392,9 +392,9 @@ XeonBotInc.ev.on('connection.update', async (s) => {
 ▣ Current prefix is: [ ${currentPrefix} ]`,
                 ...channelInfo
             });
-            console.log(chalk.green('✅ Startup message sent!'));
+            console.log(chalk.green('[GIFT-MD] ✅ Startup message sent to User!'));
         } catch (error) {
-            console.error(chalk.yellow('⚠️ Could not send startup message:'), error.message);
+            console.error(chalk.yellow('[GIFT-MD] ⚠️ Could not send startup message:'), error.message);
         }
 
         await delay(1999)
@@ -408,25 +408,25 @@ XeonBotInc.ev.on('connection.update', async (s) => {
     if (connection === 'close') {
         const statusCode = lastDisconnect?.error?.output?.statusCode;
         
-        console.log(chalk.yellow(`⚠️ Connection closed. Status code: ${statusCode}`));
+        console.log(chalk.yellow(`[GIFT-MD] ⚠️ Connection closed. Status code: ${statusCode}`));
         
         // Only delete session on logout or bad auth
         if (statusCode === DisconnectReason.loggedOut || statusCode === 401) {
-            console.log(chalk.red('🚨 Logged out - deleting session'));
+            console.log(chalk.red('[GIFT-MD] 🚨 Logged out - deleting session'));
             deleteSessionFolder();
             await delay(5000);
             process.exit(0); // Exit - require manual restart
         } 
         // For badSession, also delete
         else if (statusCode === DisconnectReason.badSession) {
-            console.log(chalk.red('🚨 Bad session - deleting and restarting'));
+            console.log(chalk.red('[GIFT-MD] 🚨 Bad session - deleting and restarting'));
             deleteSessionFolder();
             await delay(3000);
             startXeonBotInc();
         }
         // For all other disconnects, just reconnect
         else {
-            console.log(chalk.cyan('🔄 Reconnecting...'));
+            console.log(chalk.cyan('[GIFT-MD] 🔄 Reconnecting...'));
             await delay(3000); // 3 second delay
             startXeonBotInc();
         }
@@ -445,8 +445,8 @@ XeonBotInc.ev.on('connection.update', async (s) => {
 
 // ✅ FIXED
 startXeonBotInc().catch(err => {
-    console.error(chalk.red('❌ Failed to start bot:'), err);
-    console.log(chalk.yellow('🔄 Retrying in 10 seconds...'));
+    console.error(chalk.red('[GIFT-MD] ❌ Failed to start:'), err);
+    console.log(chalk.yellow('[GIFT-MD] 🔄 Retrying in 10 seconds...'));
     setTimeout(() => {
         startXeonBotInc();
     }, 10000);
@@ -456,8 +456,8 @@ startXeonBotInc().catch(err => {
 
 // ✅ FIXED VERSION
 process.on('uncaughtException', function (err) {
-    console.log(chalk.red('❌ Uncaught exception:'), err);
-    console.log(chalk.yellow('🔄 Attempting to restart bot...'));
+    console.log(chalk.red('[GIFT-MD] ❌ Uncaught exception:'), err);
+    console.log(chalk.yellow('[GIFT-MD] 🔄 Attempting to restart...'));
     
     setTimeout(() => {
         startXeonBotInc();
@@ -465,7 +465,7 @@ process.on('uncaughtException', function (err) {
 });
 
 process.on('unhandledRejection', (reason, promise) => {
-    console.log(chalk.red('❌ Unhandled Rejection at:'), promise, 'reason:', reason);
+    console.log(chalk.red('[GIFT-MD] ❌ Unhandled Rejection at:'), promise, 'reason:', reason);
 });
 
                 
@@ -473,8 +473,8 @@ process.on('unhandledRejection', (reason, promise) => {
 // 🧹 MEMORY MANAGEMENT (Optimized for 716 MiB server)
 // =================================
 
-console.log(chalk.cyan('\n📊 Initializing memory optimization...'));
-console.log(chalk.cyan(`💾 Server RAM: 716 MiB | Available: ~430 MiB | Bot Limit: 320 MB`));
+console.log(chalk.cyan('\n[GIFT-MD] 📊 Initializing memory optimization...'));
+console.log(chalk.cyan(`[GIFT-MD] 💾 Server RAM: 716 MiB | Available: ~430 MiB | Bot Limit: 320 MB`));
 
 // 1. Aggressive Garbage Collection (every 30 seconds for low RAM)
 setInterval(() => {
@@ -555,4 +555,4 @@ setInterval(() => {
     }
 }, 180_000); // Every 3 minutes
 
-console.log(chalk.green('✅ Memory optimization enabled (Low RAM mode)\n'));           
+console.log(chalk.green('[GIFT-MD] ✅ Memory optimization enabled (Low RAM mode)\n'));           
