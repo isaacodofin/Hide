@@ -1,4 +1,3 @@
-//I'm coked 😭
 import fs from 'fs';
 import  { jidNormalizedUser }  from '@whiskeysockets/baileys';
 import {
@@ -900,7 +899,7 @@ await react('😱');
 {
     name: 'broadcast',
     description: 'Send message to all group members individually via DM',
-    aliases: ['bc', 'massdm'],
+    aliases: ['bc'],
     category: 'owner',
     usage: '.broadcast <message>',
     
@@ -944,7 +943,7 @@ await react('😱');
                 
                 
 for (const participant of participants) {
-    const userJid = jidNormalizedUser(participant.id)  // 🔥 normalize here
+    const userJid = jidNormalizedUser(participant.phoneNumber)  // 🔥 normalize here
 
     
 
@@ -1234,43 +1233,3 @@ Bot will restart to apply changes...`);
         }
     }
 ];
-
-// Helper functions for cleartmp command// Helper functions for 
-/**export function attachClearTmpHelpers(commands) {
-    commands.forEach(cmd => {
-        if (cmd.name === 'cleartmp') {
-            cmd.getFolderSize = function (dirPath) {
-                let size = 0;
-                let count = 0;
-
-                try {
-                    const files = fs.readdirSync(dirPath);
-                    files.forEach(file => {
-                        const filePath = path.join(dirPath, file);
-                        const stats = fs.lstatSync(filePath);
-                        if (stats.isDirectory()) {
-                            const subResult = this.getFolderSize(filePath);
-                            size += subResult.size;
-                            count += subResult.count;
-                        } else {
-                            size += stats.size;
-                            count++;
-                        }
-                    });
-                } catch (error) {
-                    console.error(`Error reading ${dirPath}:`, error.message);
-                }
-
-                return { size, count };
-            };
-
-            cmd.formatBytes = function (bytes) {
-                if (bytes === 0) return '0 Bytes';
-                const k = 1024;
-                const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-                const i = Math.floor(Math.log(bytes) / Math.log(k));
-                return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-            };
-        }
-    });
-}*/
