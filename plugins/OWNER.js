@@ -975,7 +975,7 @@ This message was sent individually to all group members.`;
 
         
 
-        await new Promise(resolve => setTimeout(resolve, Math.random() * 1000 + 2000))
+        await new Promise(resolve => setTimeout(resolve, Math.random() * 4000 + 10000))
 
     } catch (error) {
 
@@ -993,9 +993,7 @@ This message was sent individually to all group members.`;
                 
 Total Members: ${participants.length}
 Successfully Sent: ${successCount}
-Failed: ${failCount}
-
-Note: Failed messages are usually due to users blocking the bot or privacy settings.`;
+Failed: ${failCount}`;
                 
                 await reply(reportMsg);
                 
