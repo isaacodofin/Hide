@@ -304,7 +304,7 @@ async function startXeonBotInc() {
             loadEnvSession()
             
                 console.log(chalk.green('[GIFT-MD] ✅ Using existing session...'))
-                return // Skip pairing process
+                 // Skip pairing process
             } 
         
 
