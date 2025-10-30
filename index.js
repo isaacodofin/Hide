@@ -302,13 +302,11 @@ async function startXeonBotInc() {
         if (option === '2') {
             // Check if session exists
             loadEnvSession()
-            if (envSession) {
+            
                 console.log(chalk.green('[GIFT-MD] ✅ Using existing session...'))
                 return // Skip pairing process
-            } else {
-                console.log(chalk.bold.blue('⚠️  No existing session found, falling back to phone number input...'))
-            }
-        }
+            } 
+        
 
         phoneNumber = await question(chalk.bgBlack(chalk.green('Please type your WhatsApp number\nFormat: 2348085046874 (without + or spaces) : ')))
     } else {
