@@ -300,12 +300,24 @@ async function startXeonBotInc() {
         const option = await question(chalk.bgBlack(chalk.green('Choose option (1 or 2): ')))
 
         if (option === '2') {
-            // Check if session exists
-            loadEnvSession()
+            // ✅ NEW: Load session from .env
+            console.log(chalk.cyan('[GIFT-MD] 🔍 Checking .env for SESSION_ID...'))
             
-                console.log(chalk.green('[GIFT-MD] ✅ Using existing session...'))
-                 // Skip pairing process
-            } 
+            const sessionLoaded = loadEnvSession();
+            
+            if (sessionLoaded) {
+                console.log(chalk.green('[GIFT-MD] ✅ Session loaded from .env successfully!'))
+                console.log(chalk.cyan('[GIFT-MD] 🔄 Connecting with .env session...'))
+                return; // Skip pairing, use .env session
+            } else {
+                console.log(chalk.red('❌ No valid SESSION_ID found in .env'))
+                console.log(chalk.yellow('💡 Tip: Add SESSION_ID to your .env file'))
+                console.log(chalk.yellow('   Format: SESSION_ID=GIFT-MD:your_base64_session_here'))
+                console.log('')
+                console.log(chalk.yellow('⚠️  Falling back to phone number pairing...'))
+                console.log('')
+            }
+        }
         
 
         phoneNumber = await question(chalk.bgBlack(chalk.green('Please type your WhatsApp number\nFormat: 2348085046874 (without + or spaces) : ')))
