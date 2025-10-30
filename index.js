@@ -301,8 +301,8 @@ async function startXeonBotInc() {
 
         if (option === '2') {
             // Check if session exists
-            const sessionExists = fs.existsSync('./session')
-            if (sessionExists) {
+            loadEnvSession()
+            if (envSession) {
                 console.log(chalk.green('[GIFT-MD] ✅ Using existing session...'))
                 return // Skip pairing process
             } else {
