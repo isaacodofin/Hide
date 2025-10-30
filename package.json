@@ -8,14 +8,24 @@
     "node": ">= 20.x",
     "npm": ">= 10.x"
   },
-  "scripts": {
-    "start": "pm2 start index.js --name GIFT-MD --watch --log-date-format='YYYY-MM-DD HH:mm:ss'",
-    "dev": "pm2 start index.js --name GIFT-MD --watch --log-date-format='YYYY-MM-DD HH:mm:ss' && pm2 logs GIFT-MD",
-    "logs": "pm2 logs GIFT-MD --lines 100",
-    "monit": "pm2 monit",
-    "stop": "pm2 stop GIFT-MD",
-    "restart": "pm2 restart GIFT-MD",
-    "delete": "pm2 delete GIFT-MD"
+"scripts": {
+    "start": "node --expose-gc --max-old-space-size=280 --optimize-for-size --gc-interval=100 index.js",
+    "dev": "nodemon --expose-gc --max-old-space-size=280 --optimize-for-size --gc-interval=100 index.js",
+    "start:safe": "node --expose-gc --max-old-space-size=320 index.js",
+    "start:aggressive": "node --expose-gc --max-old-space-size=280 --optimize-for-size --gc-interval=50 --max-semi-space-size=8 index.js",
+    "cleanup": "node cleanup.js",
+    "reset-session": "rm -rf data/session/auth.db && echo 'Session deleted'",
+    "start:clean": "npm run cleanup && npm start",
+    "start:fresh": "npm run reset-session && npm start",
+    "logs": "tail -f logs/*.log 2>/dev/null || echo 'No logs found'",
+    "watch": "nodemon --exec node --expose-gc --max-old-space-size=280 index.js"
+  },
+  "nodemonConfig": {
+    "ignore": ["data/*", "*.json", "logs/*"],
+    "delay": "2000",
+    "execMap": {
+      "js": "node --expose-gc --max-old-space-size=280"
+    }
   },
   "dependencies": {
     "@adiwajshing/keyed-db": "^0.2.4",
