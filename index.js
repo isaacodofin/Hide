@@ -89,7 +89,23 @@ const envPath = path.resolve(process.cwd(), '.env');
     }
 }
 
+const file = path.resolve(process.argv[1]); // current file path
 
+function restartBot() {
+
+  console.log(chalk.blue('🔁 Restarting bot...'));
+
+  spawn(process.argv[0], [file], {
+
+    stdio: 'inherit',
+
+    shell: true
+
+  });
+
+  process.exit(0);
+
+}
 // ✅ Automatically restart if .env changes (SESSION_ID or other variables)
 
 function checkEnvStatus() {
@@ -102,11 +118,11 @@ function checkEnvStatus() {
         fs.watch(envPath, { persistent: false }, (eventType, filename) => {
             if (filename && eventType === 'change') {
                 console.log(chalk.bgRed.black('================================================='));
-                console.log(chalk.white.bgRed('🚨 .env file change detected!'));
+                console.log(chalk.white.bgRed('[GIFT-MD] 🚨 .env file change detected!'));
                 console.log(chalk.white.bgRed('Restarting bot to apply new configuration (e.g., SESSION_ID).'));
                 console.log(chalk.red.bgBlack('================================================='));
                 
-                process.exit(1); // triggers auto restart
+            restartBot()    // triggers auto restart
             }
         });
     } catch (err) {
@@ -123,7 +139,6 @@ console.log(chalk.cyan('┗━━━━━━━━━━━━━━━━━�
 store.readFromFile();
 // Write store every 10 seconds
 setInterval(() => store.writeToFile(), 10000);
-
 
 // ✅ FIXED VERSION
 function deleteSessionFolder() {
@@ -174,6 +189,83 @@ const question = (text) => {
     } else {
         // In non-interactive environment, use ownerNumber from settings
         return Promise.resolve(settings.ownerNumber || phoneNumber)
+    }
+}
+
+// ✅ SMART SESSION PARSER - Handles ANY session format
+function parseAndSaveSession(sessionInput) {
+    const sessionDir = path.join(process.cwd(), 'data', 'session', 'auth.db');
+    
+    try {
+        // Ensure session directory exists
+        if (!fs.existsSync(sessionDir)) {
+            fs.mkdirSync(sessionDir, { recursive: true });
+        }
+        
+        let sessionData = sessionInput.trim();
+        
+        // Step 1: Remove any known prefixes
+        const knownPrefixes = [
+            "GIFT-MD:", "JUNE-MD:", "SESSION:", "MD:", 
+            "GIFT_MD:", "JUNE_MD:", "SESSION_ID:", 
+            "Gifted~", "Gifted-", "BAILEYS:"
+        ];
+        
+        for (const prefix of knownPrefixes) {
+            if (sessionData.startsWith(prefix)) {
+                sessionData = sessionData.replace(prefix, "").trim();
+                console.log(chalk.cyan(`[GIFT-MD] 🔍 Detected prefix: ${prefix}`));
+                break;
+            }
+        }
+        
+        // Step 2: Try to detect format
+        let credsJson = null;
+        
+        // Check if it's already valid JSON
+        if (sessionData.startsWith('{') && sessionData.endsWith('}')) {
+            console.log(chalk.cyan('[GIFT-MD] 📋 Format detected: Raw JSON'));
+            try {
+                credsJson = JSON.parse(sessionData);
+            } catch (e) {
+                throw new Error('Invalid JSON format: ' + e.message);
+            }
+        }
+        // Otherwise, assume it's base64
+        else {
+            console.log(chalk.cyan('[GIFT-MD] 🔐 Format detected: Base64'));
+            try {
+                const decoded = Buffer.from(sessionData, 'base64').toString('utf8');
+                credsJson = JSON.parse(decoded);
+            } catch (e) {
+                throw new Error('Invalid base64 or JSON: ' + e.message);
+            }
+        }
+        
+        // Step 3: Validate session structure
+        if (!credsJson || typeof credsJson !== 'object') {
+            throw new Error('Session data is not a valid object');
+        }
+        
+        // Check for essential Baileys properties
+        const requiredKeys = ['noiseKey', 'signedIdentityKey', 'signedPreKey', 'registrationId'];
+        const hasRequiredKeys = requiredKeys.some(key => credsJson.hasOwnProperty(key));
+        
+        if (!hasRequiredKeys) {
+            throw new Error('Session missing required Baileys keys (noiseKey, signedIdentityKey, etc.)');
+        }
+        
+        // Step 4: Save to creds.json
+        const credsPath = path.join(sessionDir, 'creds.json');
+        fs.writeFileSync(credsPath, JSON.stringify(credsJson, null, 2));
+        
+        console.log(chalk.green('[GIFT-MD] ✅ Session validated and saved successfully!'));
+        restartBot();
+        return true;
+        
+    } catch (error) {
+        console.log(chalk.red(`[GIFT-MD] ❌ Failed to parse session: ${error.message}`));
+        return false;
     }
 }
 
@@ -294,11 +386,13 @@ async function startXeonBotInc() {
         console.log(chalk.grey('┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛'))
         console.log('')
         console.log(chalk.bold.blue('1. Enter phone number for new pairing'))
-        console.log(chalk.bold.blue('2. Use existing session (if available)'))
+        console.log(chalk.bold.blue('2. Use .env  session'))
+        console.log(chalk.bold.blue('3. Paste any kind of session'))
+        
         console.log('')
 
-        const option = await question(chalk.bgBlack(chalk.green('Choose option (1 or 2): ')))
-
+        const option = await question(chalk.bgBlack(chalk.green('Choose between option: 1--2--3\n')))
+                 
         if (option === '2') {
             // ✅ NEW: Load session from .env
             console.log(chalk.cyan('[GIFT-MD] 🔍 Checking .env for SESSION_ID...'))
@@ -316,6 +410,40 @@ async function startXeonBotInc() {
                 console.log('')
                 console.log(chalk.yellow('⚠️  Falling back to phone number pairing...'))
                 console.log('')
+            }
+        }else if (option === '3') {
+            console.log(chalk.cyan('┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓'))
+            console.log(chalk.cyan('┃')+ chalk.green('          📋 PASTE YOUR SESSION')+ chalk.cyan('         ┃'))
+            console.log(chalk.cyan('┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛'))
+            console.log('')
+            console.log(chalk.yellow('✅ Supported formats:'))
+            console.log(chalk.white('   • Base64 with prefix: GIFT-MD:eyJub2..'))
+            console.log(chalk.white('   • Base64 without prefix: eyJub2lzy....'))
+            console.log(chalk.white('   • Raw JSON: {"noiseKey":{"private":...'))
+            console.log('')
+            console.log(chalk.cyan('Paste your session below (press Enter when done):'))
+            console.log('')
+            
+            const pastedSession = await question(chalk.bgBlack(chalk.green('> ')))
+            
+            if (!pastedSession || pastedSession.trim().length < 50) {
+                console.log(chalk.red('❌ Session too short or empty!'))
+                console.log(chalk.yellow('⚠️  Falling back to phone number pairing...'))
+                console.log('')
+            } else {
+                console.log(chalk.cyan('[GIFT-MD] 🔍 Analyzing session format...'))
+                
+                const sessionSaved = parseAndSaveSession(pastedSession);
+                
+                if (sessionSaved) {
+                    console.log(chalk.green('[GIFT-MD] ✅ Session saved successfully!'))
+                    console.log(chalk.cyan('[GIFT-MD] 🔄 Connecting with pasted session...'))
+                    return; // Skip pairing
+                } else {
+                    console.log(chalk.red('❌ Failed to parse session!'))
+                    console.log(chalk.yellow('⚠️  Falling back to phone number pairing...'))
+                    console.log('')
+                }
             }
         }
         
@@ -436,6 +564,7 @@ XeonBotInc.ev.on('connection.update', async (s) => {
         }
         // For all other disconnects, just reconnect
         else {
+       await delay(10000);
             console.log(chalk.cyan('[GIFT-MD] 🔄 Reconnecting...'));
             await delay(3000); // 3 second delay
             startXeonBotInc();
@@ -478,27 +607,40 @@ process.on('unhandledRejection', (reason, promise) => {
     console.log(chalk.red('[GIFT-MD] ❌ Unhandled Rejection at:'), promise, 'reason:', reason);
 });
 
-                
-    // =================================
+  // =================================
 // 🧹 MEMORY MANAGEMENT (Optimized for 716 MiB server)
 // =================================
 
-console.log(chalk.cyan('\n[GIFT-MD] 📊 Initializing memory optimization...'));
-console.log(chalk.cyan(`[GIFT-MD] 💾 Server RAM: 716 MiB | Available: ~430 MiB | Bot Limit: 320 MB`));
+console.log(chalk.cyan('[GIFT-MD] 📊 Initializing memory optimization...'));
+console.log(chalk.cyan(`[GIFT-MD] 💾 Server RAM: 716 MiB | Available: ~430 MiB | Bot Limit: 280 MB`));
+
+// ✅ Check if GC is available on startup (only once)
+if (global.gc) {
+    console.log(chalk.green('[GIFT-MD] ✅ Garbage collection enabled!'));
+} else {
+    console.log(chalk.yellow('[GIFT-MD] ⚠️ Garbage collection not available.'));
+    console.log(chalk.cyan('[GIFT-MD] 💡 To enable: node --expose-gc index.js'));
+}
 
 // 1. Aggressive Garbage Collection (every 30 seconds for low RAM)
 setInterval(() => {
     if (global.gc) {
-        global.gc();
-        const memUsage = process.memoryUsage();
-        const rss = (memUsage.rss / 1024 / 1024).toFixed(2);
-        const heapUsed = (memUsage.heapUsed / 1024 / 1024).toFixed(2);
-        
-        console.log(chalk.cyan(`🧹 GC completed | RAM: ${rss} MB | Heap: ${heapUsed} MB`));
-    } else {
-        //console.log(chalk.yellow('⚠️ Garbage collection not available. Start with: node --expose-gc index.js'));
+        try {
+            global.gc();
+            const memUsage = process.memoryUsage();
+            const rss = (memUsage.rss / 1024 / 1024).toFixed(2);
+            const heapUsed = (memUsage.heapUsed / 1024 / 1024).toFixed(2);
+            
+            // ✅ Only log if RAM is high (above 200 MB)
+            if (rss > 200) {
+                console.log(chalk.cyan(`[GIFT-MD] 🧹 GC: RAM ${rss} MB | Heap ${heapUsed} MB`));
+            }
+        } catch (err) {
+            // Silent fail - don't spam console
+        }
     }
-}, 30_000); // Every 30 seconds (more frequent for low RAM)
+    // ✅ REMOVED: No more warning spam!
+}, 30_000); // Every 30 seconds
 
 // 2. Memory Monitoring with 3-tier warning system
 setInterval(() => {
@@ -506,36 +648,52 @@ setInterval(() => {
     const rss = memUsage.rss / 1024 / 1024;
     const heapUsed = memUsage.heapUsed / 1024 / 1024;
     
-    // Log every 5 minutes for monitoring
-    const shouldLog = Date.now() % 300000 < 30000; // True once every 5 min
-    if (shouldLog) {
-        console.log(chalk.blue(`📊 Memory: RAM ${rss.toFixed(2)} MB | Heap ${heapUsed.toFixed(2)} MB`));
+    // 🟡 Warning (200-250 MB)
+    if (rss >= 200 && rss < 250) {
+        console.log(chalk.yellow(`[GIFT-MD] ⚠️ RAM: ${rss.toFixed(2)} MB / 280 MB (Warning)`));
     }
-    
-    // 🟡 Warning (200-280 MB)
-    if (rss >= 200 && rss < 280) {
-        console.log(chalk.yellow(`⚠️ RAM: ${rss.toFixed(2)} MB / 280 MB (Warning)`));
-    }
-    // 🟠 High (280-320 MB) - Force GC
-    else if (rss >= 280 && rss < 320) {
-        console.log(chalk.hex('#FFA500')(`🟠 High RAM: ${rss.toFixed(2)} MB / 320 MB`));
+    // 🟠 High (250-270 MB) - Force GC
+    else if (rss >= 250 && rss < 270) {
+        console.log(chalk.hex('#FFA500')(`[GIFT-MD] 🟠 High RAM: ${rss.toFixed(2)} MB / 280 MB`));
         if (global.gc) {
-            console.log(chalk.cyan('🧹 Forcing garbage collection...'));
-            global.gc();
+            console.log(chalk.cyan('[GIFT-MD] 🧹 Forcing garbage collection...'));
+            try {
+                global.gc();
+            } catch (err) {
+                // Silent fail
+            }
         }
     }
-    // 🔴 Critical (> 320 MB) - RESTART
-    else if (rss >= 320) {
-        console.log(chalk.red(`🚨 CRITICAL: ${rss.toFixed(2)} MB > 320 MB`));
-        console.log(chalk.red('🔄 Restarting to prevent server crash...'));
+    // 🔴 Critical (270+ MB) - Emergency cleanup
+    else if (rss >= 270) {
+        console.log(chalk.red(`[GIFT-MD] 🔴 CRITICAL RAM: ${rss.toFixed(2)} MB / 280 MB`));
+        console.log(chalk.red('[GIFT-MD] ⚠️ Memory limit approaching! Forcing cleanup...'));
         
-        if (global.sock) {
-            try { global.sock.end(); } catch (e) {}
+        if (global.gc) {
+            try {
+                global.gc();
+                console.log(chalk.green('[GIFT-MD] ✅ Emergency GC completed'));
+            } catch (err) {
+                console.error(chalk.red('[GIFT-MD] ❌ GC failed:', err.message));
+            }
         }
         
-        setTimeout(() => process.exit(1), 3000);
+        // Clear caches
+        if (global.sock?.msgRetryCounterCache) {
+            global.sock.msgRetryCounterCache.clear();
+        }
     }
-}, 30_000);
+}, 60_000); // Check every 60 seconds (less frequent)             
+   
+
+
+
+
+
+
+
+
+
 
 // 3. Aggressive store cleanup (every 3 minutes)
 setInterval(() => {
