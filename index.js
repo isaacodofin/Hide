@@ -154,8 +154,8 @@ global.server = detectHost();
 
 // Show in startup
 console.log(chalk.cyan(`[GIFT-MD] 🖥️ Platform: ${global.server}`));
-console.log(chalk.cyan(`[GIFT-MD] 📦 Node: ${process.version}\n`));
-console.log(chalk.cyan(`[GIFT-MD] 📦 Baileys version: ${baileysPkg.version}`));
+console.log(chalk.cyan(`[GIFT-MD] 📦 Node: ${process.version}`));
+console.log(chalk.cyan(`[GIFT-MD] 📦 Baileys version: ${baileysPkg.version}\n`));
 console.log('');
 // Read store on startup
 store.readFromFile();
