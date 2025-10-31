@@ -31,8 +31,6 @@ import makeWASocket, {
     delay
 } from "@whiskeysockets/baileys";
 import baileysPkg from '@whiskeysockets/baileys/package.json' with { type: "json" };
-
-console.log(`[GIFT-MD] 📦 Baileys version: ${baileysPkg.version}`);
 import NodeCache from "node-cache";
 import pino from "pino";
 import readline from "readline";
@@ -157,6 +155,7 @@ global.server = detectHost();
 // Show in startup
 console.log(chalk.cyan(`[GIFT-MD] 🖥️ Platform: ${global.server}`));
 console.log(chalk.cyan(`[GIFT-MD] 📦 Node: ${process.version}\n`));
+console.log(chalk.cyan(`[GIFT-MD] 📦 Baileys version: ${baileysPkg.version}`));
 console.log('');
 // Read store on startup
 store.readFromFile();
