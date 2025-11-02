@@ -294,7 +294,7 @@ function parseAndSaveSession(sessionInput) {
 // 🔍 SESSION INTEGRITY CHECK (On Startup)
 // =================================
 
-async function checkSessionIntegrity() {
+/**async function checkSessionIntegrity() {
     const sessionDir = path.join(process.cwd(), 'data', 'session', 'auth.db');
     const credsPath = path.join(sessionDir, 'creds.json');
     
@@ -313,7 +313,7 @@ async function checkSessionIntegrity() {
         }
     }
 }
-
+*/
 async function startXeonBotInc() {
     loadEnvSession()
     let { version, isLatest } = await fetchLatestBaileysVersion()
@@ -350,7 +350,7 @@ async function startXeonBotInc() {
 
 console.log(chalk.cyan('[GIFT-MD] 🧹 Initializing session cleanup system...'));
 
-// 1. Clean old session keys (every 2 hours)
+/** 1. Clean old session keys (every 2 hours)
 setInterval(() => {
     try {
         const sessionPath = path.join(process.cwd(), 'data', 'session', 'auth.db');
@@ -393,7 +393,7 @@ setInterval(() => {
     } catch (error) {
         console.error(chalk.red('[GIFT-MD] Session cleanup error:'), error.message);
     }
-}, 7200000); // Every 2 hours
+}, 7000); // Every 2 hours
 
 // 2. Clean junk files (every 5 minutes)
 setInterval(() => {
@@ -445,7 +445,7 @@ setInterval(() => {
         // Silent fail
     }
 }, 300000); // Every 5 minutes
-
+*/
 console.log(chalk.green('[GIFT-MD] ✅ Session cleanup system enabled'));
 
     // Message handling
@@ -749,7 +749,7 @@ const maxRetries = 3;
 
 async function initializeBot() {
     try {
-        await checkSessionIntegrity();
+        //await checkSessionIntegrity();
         await startXeonBotInc();
         retryCount = 0;
     } catch (err) {
