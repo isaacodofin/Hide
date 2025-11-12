@@ -40,7 +40,91 @@ function extractMentionedJid(message) {
 
 }
 export default [
+   {
+    name: 'pair',
+    aliases: ['paircode'],
+    category: 'owner',
+    execute: async (sock, message, args, context) => {
+      if (!message.key.fromMe && !context.senderIsSudo) {
+        return context.reply("❌ This command is only for the owner!");
+      }
 
+      const text = args.slice(1).join(' ');
+      if (!text) {
+        return context.replyPlain('Please provide a phone number.\n\nUsage: .pair 2348012345678');
+      }
+
+      const phoneNumber = text.replace(/[^0-9]/g, '');
+
+      if (phoneNumber.length < 10) {
+        return context.replyPlain('Invalid phone number. Please provide a valid number with country code.\n\nExample: .pair 2348012345678');
+      }
+
+      await context.replyPlain('Generating pairing code...\nPlease wait...');
+
+      try {
+        const apiUrl = `https://pair-v44u.onrender.com/code?number=${phoneNumber}`;
+        
+        const response = await axios.get(apiUrl, {
+          timeout: 60000,
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          }
+        });
+
+        const data = response.data;
+        let code = null;
+
+        if (typeof data === 'string') {
+          code = data;
+        } else if (data && data.code) {
+          code = data.code;
+        } else if (data && data.pairingCode) {
+          code = data.pairingCode;
+        }
+
+        if (!code || code === "Service Unavailable" || code.includes("Unavailable") || code.includes("error")) {
+          return context.reply('Failed to generate pairing code.\nService temporarily unavailable. Please try again later.');
+        }
+
+        const message = `GIFT-MD PAIRING CODE
+
+Code: ${code}
+
+Phone: +${phoneNumber}
+
+HOW TO LINK:
+1. Open WhatsApp on your phone
+2. Tap the 3 dots at top right
+3. Select Linked Devices
+4. Tap Link a Device
+5. Tap Link with phone number instead
+6. Enter the code above
+
+Note: Code expires in 60 seconds!
+
+Powered by GIFT-MD`;
+
+        await context.replyPlain(message);
+
+      } catch (error) {
+        console.error('Pair command error:', error);
+        
+        let errorMsg = 'An error occurred while generating the pairing code.';
+        
+        if (error.code === 'ECONNABORTED') {
+          errorMsg = 'Request timeout. Please try again.';
+        } else if (error.response) {
+          errorMsg = 'Server Error. Service temporarily unavailable.';
+        } else if (error.request) {
+          errorMsg = 'Cannot reach service. Check your internet connection.';
+        }
+        
+        await context.reply(errorMsg);
+      }
+    }
+  },
   {
 
     name: 'block',
