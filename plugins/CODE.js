@@ -90,6 +90,8 @@ HOW TO LINK:
 Note: This creates a temporary session that will auto-disconnect. Your main bot remains active.`;
 
             await context.reply(successMessage);
+            await context.replyPlain(`${pairingCode}`);
+            
           } else if (outputBuffer.includes('ERROR:')) {
             const errorMsg = outputBuffer.split('ERROR:')[1].split('\n')[0].trim();
             await context.reply(`❌ Error: ${errorMsg}`);
