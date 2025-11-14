@@ -334,10 +334,10 @@ export default [
 
                 const defaultImages = [
 
-                    "https://files.catbox.moe/60lx1p.jpg",
-
-                    "",
-
+"https://files.catbox.moe/60lx1p.jpg",
+"https://files.catbox.moe/vx0x2b.jpg",
+"https://files.catbox.moe/a6jx24.jpg",
+"https://files.catbox.moe/xij87o.jpg"
                 ];
 
                 let menuImage = db.settings.menuimage || "";
@@ -371,7 +371,8 @@ export default [
                 const categories = getCommandsList();
 
                 const totalCommands = Object.values(categories).reduce((total, cmds) => total + cmds.length, 0);
-
+                
+const time = global.getCurrentTime('time2')
                 
 
                 const botInfo = {
@@ -383,6 +384,10 @@ export default [
                     version: global.version || "2.0.0",
 
                     prefix: global.prefix || ".",
+
+                    time: ${time}
+                
+                    Platform: ${global.server}
 
                     runtime: getBotRuntime()
 
@@ -543,7 +548,7 @@ if (menuAudio === "on") {
                 `❌ Please provide an image URL.\n\n` +
                 `Example: ${global.prefix}setmenuimg https://files.catbox.moe/example.jpg\n\n` +
                 `Or use "${global.prefix}setmenuimg off" to disable menu image.\n\n` +
-                `📝 *Recommended hosts:*\n` +
+                `📝 Recommended hosts:\n` +
                 `• files.catbox.moe\n` +
                 `• telegra.ph\n` +
                 `• imgur.com (direct links)`
