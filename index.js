@@ -58,7 +58,7 @@ const envPath = path.resolve(process.cwd(), '.env');
     console.log(chalk.green('[GIFT-MD] Downloading Session from .env'));
 
     // Allow multiple known prefixes or none at all
-    const knownPrefixes = ["JUNE-MD:", "GIFT-MD:", "SESSION:", "MD:"];
+    const knownPrefixes = ["JUNE-MD:", "GIFT-MD:", "SESSION:", "MD:","CYPHER-X:"];
     let base64Data = envSession.trim();
 
     // Remove any recognized prefix if present
