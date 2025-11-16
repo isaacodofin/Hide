@@ -1,3 +1,4 @@
+import { getChatId, getSenderId } from './lib/myfunc.js';
 import chalk from 'chalk';
 import chatbotMemory from './lib/chatbot.js'
 import settings from './settings.js';
@@ -96,10 +97,13 @@ const message = messages[0];
 
 const currentPrefix = global.prefix;
     
-const chatId = message.key.remoteJid||
-message.key.remoteJidAlt;
-  
-const senderId = message.key.participantAlt || message.key.participant;
+const chatId = getChatId(message);
+        const senderId = getSenderId(message);
+        // Validation
+        if (!chatId) {
+            console.log('⚠️ Could not detect valid chatId');
+            return;
+        }
 const pushname = message.pushName || "Unknown User";
 const isGroup = chatId.endsWith('@g.us');
 const isChannel = chatId.endsWith('@newsletter'); // Add this line
