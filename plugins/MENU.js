@@ -372,7 +372,7 @@ export default [
 
                 const totalCommands = Object.values(categories).reduce((total, cmds) => total + cmds.length, 0);
                 
-const time = global.getCurrentTime('time2')
+const time = global.getCurrentTime('time2');
                 
 
                 const botInfo = {
@@ -385,9 +385,9 @@ const time = global.getCurrentTime('time2')
 
                     prefix: global.prefix || ".",
 
-                    time: ${time}
+                    time: time,
                 
-                    Platform: ${global.server}
+                    Platform: global.server,
 
                     runtime: getBotRuntime()
 
