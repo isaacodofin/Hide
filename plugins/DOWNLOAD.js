@@ -578,7 +578,7 @@ execute: async (sock, message, args, context) => {
 
       const text = args.slice(1).join(' ');
 
-      if (!text) return context.reply("*Please provide a MediaFire file URL*");
+      if (!text) return context.reply("Please provide a MediaFire file URL");
 
       try {
 
@@ -588,7 +588,7 @@ execute: async (sock, message, args, context) => {
 
         if (response.status !== 200 || !data.status || !data.data) {
 
-          return context.reply("*Please try again later or try another command!*");
+          return context.reply("Please try again later or try another command!");
 
         } else {
 
@@ -678,7 +678,7 @@ execute: async (sock, message, args, context) => {
             const urlYt = video.url;
 
             // Call Keith API
-            const apiUrl = `https://apis-keith.vercel.app/download/dlmp3?url=${encodeURIComponent(urlYt)}`;
+            const apiUrl = `https://api.privatezia.biz.id/api/downloader/ytmp3?url=${encodeURIComponent(urlYt)}`;
             const response = await axios.get(apiUrl, {
                 timeout: 45000,
                 headers: { 'User-Agent': 'WhatsApp-Bot/1.0' }
