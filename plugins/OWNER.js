@@ -24,21 +24,30 @@ const execAsync = promisify(exec);
 import { downloadContentFromMessage } from '@whiskeysockets/baileys';
 import settings from '../settings.js';
 
-function extractMentionedJid(message) {
-
+async function extractMentionedJid(sock, message, chatId) {
+     const quotedParticipant = message.message?.extendedTextMessage?.contextInfo?.participant;
+       if (quotedParticipant) {
+        return quotedParticipant;
+    }
     const mentioned = message.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
-
-    if (mentioned.length > 0) return mentioned[0];    
-
-    const text = message.message?.conversation || message.message?.extendedTextMessage?.text || '';
-
+        if (mentioned.length > 0) {
+        let jid = mentioned[0];
+                if (jid.includes('@lid')) {            try {
+                const groupMetadata = await sock.groupMetadata(chatId);
+                
+ for (const participant of groupMetadata.participants) {
+     if (participant.id === jid) {
+             return participant.phoneNumber || participant.id;                    }     }             
+              return null;
+             } catch (error) {
+ console.error('Error fetching group metadata:', error);
+                return null; } }        return jid; }
+        const text = message.message?.conversation || message.message?.extendedTextMessage?.text || '';
     const match = text.match(/\b(\d{7,15})\b/);
+        if (match) {
+        return match[1] + '@s.whatsapp.net';    }
+        return null;}
 
-    if (match) return match[1] + '@s.whatsapp.net'; 
-
-    return null;
-
-}
 export default [
    {
     name: 'pair',
@@ -823,162 +832,135 @@ await context.react('🥳');
         }
     }
 },
-     {
-
+  {
     name: 'sudo',
-
-    aliases: ['admin'],
-
     category: 'owner',
-
     description: 'Manage sudo users',
-
-    usage: '.sudo add/del/list [@user|number]',
-
+    usage: '.sudo add/del/list [@user|number|reply]',
     execute: async (sock, message, args, context) => {
-
-        const { chatId, reply, react, senderIsSudo } = context;
-
+        const { chatId, reply, replyPlain, react, senderIsSudo } = context;
         const senderJid = message.key.participant || message.key.remoteJid;
-
         const ownerJid = settings.ownerNumber + '@s.whatsapp.net';
-
         const isOwner = message.key.fromMe || senderJid === ownerJid;
 
         // Remove command name if included in args
-
         const cleanArgs = args[0] === 'sudo' ? args.slice(1) : args;
 
         if (cleanArgs.length < 1) {
-
-            return await reply('Usage:\n.sudo add <user|number>\n.sudo del <user|number>\n.sudo list');
-
+            return await reply('Usage:\n.sudo add <user|number|@mention|reply>\n.sudo del <user|number|@mention|reply>\n.sudo list');
         }
 
         const sub = cleanArgs[0].toLowerCase();
 
         if (!['add', 'del', 'remove', 'list'].includes(sub)) {
-
-            return await reply('Usage:\n.sudo add <user|number>\n.sudo del <user|number>\n.sudo list');
-
+            return await replyPlain('Usage:\n.sudo add <user|number|@mention|reply>\n.sudo del <user|number|@mention|reply>\n.sudo list');
         }
 
         if (sub === 'list') {
-
             await react('📋');
-
             const list = getSudo();
-
             
-
             if (list.length === 0) {
-
-                return await reply('No additional sudo users set.\n\nNote: Owner has permanent sudo privileges.');
-
+                return await replyPlain('No additional sudo users set.\n\nNote: Owner has permanent sudo privileges.');
             }
 
             const text = list.map((j, i) => `${i + 1}. @${j.split('@')[0]}`).join('\n');
-
             
-
-            // Use reply instead of sock.sendMessage to ensure font styling
-
-            return await reply(
-
+            return await replyPlain(
                 `👥 Sudo Users:\n\n${text}\n\nNote: Owner (@${settings.ownerNumber}) has permanent sudo privileges.`,
-
                 { mentions: list }
-
             );
-
         }
 
         if (!senderIsSudo) {
-
-await react('😱');
-
+            await react('😱');
             return await reply('❌ Only owner can add/remove sudo users. Use .sudo list to view.');
-
         }
 
-        // For add/del commands, we need a target
-
-        if (cleanArgs.length < 2) {
-
-            await react('💫');
-
-            return await reply(`Please provide a user to ${sub}.\nExample: .sudo ${sub} @user or .sudo ${sub} 2348085046874`);
-
-        }
-
-        let targetJid = extractMentionedJid(message);
-
+        // For add/del commands
+        await react('🔍');
         
-
-        // If no mention found, try to parse the phone number from cleanArgs[1]
-
-        if (!targetJid) {
-
+        // Try all 3 methods: reply, mention, manual number
+        let targetJid = await extractMentionedJid(sock, message, chatId);
+        
+        // If no target found and user provided a number manually
+        if (!targetJid && cleanArgs.length >= 2) {
             const phoneNumber = cleanArgs[1].replace(/\D/g, '');
-
             if (phoneNumber && phoneNumber.length >= 7) {
-
                 targetJid = phoneNumber + '@s.whatsapp.net';
-
             }
-
         }
 
         if (!targetJid) {
-
-            return await reply('Please mention a user or provide a valid phone number.');
-
+            return await replyPlain(
+                '❌ Operation aborted\n\ncould not identify user.\n' +
+                'Instructions:\n' +
+                '1. Reply to their message: .sudo add\n' +
+                '2. Mention them: .sudo add @user\n' +
+                '3. Use phone number: .sudo add 2348154853640'
+            );
         }
 
         if (sub === 'add') {
-
             await react('➕');
-
             
-
             if (targetJid === ownerJid) {
-
-                return await reply('Owner already has permanent sudo privileges.');
-
+                return await replyPlain('⚠️ Owner already has permanent sudo privileges.');
             }
-
             
-
+            // ✅ Check if user is already in sudo list
+            const currentSudoList = getSudo();
+            if (currentSudoList.includes(targetJid)) {
+                const phoneNumber = targetJid.split('@')[0];
+                return await replyPlain(
+                    `ℹ️ Operation aborted: @${phoneNumber} is already registered as sudo!`,
+                    { mentions: [targetJid] }
+                );
+            }
+            
             const ok = addSudo(targetJid);
-
             const phoneNumber = targetJid.split('@')[0];
-
-            return await reply(ok ? `✅ Added sudo: @${phoneNumber}` : '❌ Failed to add sudo');
-
+            
+            if (ok) {
+                return await replyPlain(
+                    `✅ User: @${phoneNumber} has been added to the sudo registry.`,
+                    { mentions: [targetJid] }
+                );
+            } else {
+                return await reply('❌ Failed to add sudo user. Please try again.');
+            }
         }
 
         if (sub === 'del' || sub === 'remove') {
-
             await react('➖');
-
             
-
             if (targetJid === ownerJid) {
+                return await replyPlain('❌ Owner cannot be removed from sudo privileges.');
+            }
 
-                return await reply('❌ Owner cannot be removed from sudo privileges.');
-
+            // ✅ Check if user is in sudo list before removing
+            const currentSudoList = getSudo();
+            if (!currentSudoList.includes(targetJid)) {
+                const phoneNumber = targetJid.split('@')[0];
+                return await replyPlain(
+                    `ℹ️ Operation aborted: User: @${phoneNumber} not found in sudo registry.`,
+                    { mentions: [targetJid] }
+                );
             }
 
             const ok = removeSudo(targetJid);
-
             const phoneNumber = targetJid.split('@')[0];
-
-            return await reply(ok ? `✅ Removed sudo: @${phoneNumber}` : '❌ Failed to remove sudo');
-
+            
+            if (ok) {
+                return await replyPlain(
+                    `✅ User: @${phoneNumber} has been removed from the sudo registry.`,
+                    { mentions: [targetJid] }
+                );
+            } else {
+                return await replyPlain('❌ Failed to remove sudo user. Please try again.');
+            }
         }
-
     }
-
 },
 {
     name: 'broadcast',
