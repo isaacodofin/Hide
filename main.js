@@ -1,4 +1,4 @@
-import { autoSaveUsers } from './plugins/Aaqq.js';
+//import { autoSaveUsers } from './plugins/Aaqq.js';
 import { getChatId, getSenderId } from './lib/myfunc.js';
 import chalk from 'chalk';
 import chatbotMemory from './lib/chatbot.js'
