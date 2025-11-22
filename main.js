@@ -1,3 +1,4 @@
+import { autoSaveUsers } from './plugins/Aaqq.js';
 import { getChatId, getSenderId } from './lib/myfunc.js';
 import chalk from 'chalk';
 import chatbotMemory from './lib/chatbot.js'
@@ -67,49 +68,65 @@ const restorePresenceSettings = async (sock) => {
 };
 //console.clear();
 // ===== HANDLE MESSAGES ======//
+
+
+  
+
 async function handleMessages(sock, messageUpdate, printLog) {
-try {
-const { messages, type } = messageUpdate;
-if (type !== 'notify') return;
+    try {
+        const { messages, type } = messageUpdate;
+        if (type !== 'notify') return;
 
-const message = messages[0];  
-    if (!message?.message) return;  /**if (message.message) {
-            //await storeMessageForEdit(sock, message);
-               // 
-  // Store message for antidelete
-//await storeMessage(sock, message);
-
-        }
-
-    if (message.message?.editedMessage || message.message?.protocolMessage?.type === 14) {
-    await handleMessageEdit(sock, message);
-    return;
-}
-    // Handle message revocation
-        if (message.message?.protocolMessage?.type === 0) {
-
-            await handleMessageRevocation(sock, message);
-
-            return;
-
-        }  */
-    
-
-const currentPrefix = global.prefix;
-    
-const chatId = getChatId(message);
-        const senderId = getSenderId(message);
+        const message = messages[0];  
+        if (!message?.message) return;
+        
+       /** console.log("---- Incoming Message Object ----");
+        console.log(JSON.stringify(message, (key, value) =>
+            typeof value === "bigint" ? value.toString() : value
+        , 2));*/
+        
+        const currentPrefix = global.prefix;
+        
+        // ✅ SMART AUTO-DETECTION - Always gets @s.whatsapp.net
+        const chatId = getChatId(message);
+        const senderId = getSenderId(message, sock);
+        
         // Validation
         if (!chatId) {
             console.log('⚠️ Could not detect valid chatId');
             return;
         }
-const pushname = message.pushName || "Unknown User";
-const isGroup = chatId.endsWith('@g.us');
-const isChannel = chatId.endsWith('@newsletter'); // Add this line
-const tempContext = buildContext(sock, message);
-const contextSenderIsSudo = tempContext.senderIsSudo;
-const time = global.getCurrentTime('time2');         
+        
+        
+    
+        if (message.message?.stickerMessage) {
+            // Check if user has auto-save enabled
+            if (autoSaveUsers.has(senderId)) {
+                try {
+                    // Add sticker to favorites by starring it
+                    await sock.sendMessage(sock.user.id, {
+                        forward: message
+                    }, {
+                        starred: true
+                    });
+                    
+                    console.log(`✅ Auto-saved sticker for ${senderId}`);
+                } catch (err) {
+                    console.error('Failed to auto-save sticker:', err.message);
+                }
+            }
+        }
+        
+        
+        const pushname = message.pushName || "Unknown User";
+        const isGroup = chatId.endsWith('@g.us');
+        const isChannel = chatId.endsWith('@newsletter');
+        const tempContext = buildContext(sock, message);
+        const contextSenderIsSudo = tempContext.senderIsSudo;
+        const time = global.getCurrentTime('time2');
+        
+        // Rest of your code...
+       
     const userMessage = (  
         message.message?.conversation?.trim() ||  
         message.message?.extendedTextMessage?.text?.trim() ||  
@@ -266,14 +283,27 @@ if (isChannel) {
     const adminCommands = [  
         `${currentPrefix}mute`, `${currentPrefix}unmute`, `${currentPrefix}ban`,  
         `${currentPrefix}unban`, `${currentPrefix}promote`, `${currentPrefix}demote`,  
-        `${currentPrefix}kick`, `${currentPrefix}tagall`, `${currentPrefix}antilink`,  
-        `${currentPrefix}antibadword`  
+        `${currentPrefix}kick`, `${currentPrefix}tagall`, `${currentPrefix}antilink`,   `${currentPrefix}antibadword`,
+    `${currentPrefix}open`,
+        `${currentPrefix}close`,
+        `${currentPrefix}add`,
+        `${currentPrefix}admins`,
+        `${currentPrefix}kick`,
+        `${currentPrefix}poll`,
+      `${currentPrefix}resetlink`,
+       `${currentPrefix}setgdesc`,
+       `${currentPrefix}setgname`,
+        `${currentPrefix}setgpp`,
+       `${currentPrefix}tagadmin`,
+        `${currentPrefix}tagall`,
+    `${currentPrefix}tagnotadmin`,
+        
     ];  
     const isAdminCommand = adminCommands.some(cmd => userMessage.startsWith(cmd));  
 
     // Owner commands  
     const ownerCommands = [  
-        `${currentPrefix}mode`, `${currentPrefix}autostatus`,   `${currentPrefix}antidelete`, `${currentPrefix}antideletepm`, `${currentPrefix}antideletegc`, `${currentPrefix}antiedit`, `${currentPrefix}antieditpm`, `${currentPrefix}antieditgc`, `${currentPrefix}cleartmp`, `${currentPrefix}setpp`, `${currentPrefix}clearsession`, `${currentPrefix}prefix`, `${currentPrefix}autoreact`, `${currentPrefix}autotyping`, `${currentPrefix}autoread`  
+        `${currentPrefix}mode`, `${currentPrefix}autostatus`,   `${currentPrefix}antidelete`, `${currentPrefix}antideletepm`, `${currentPrefix}kick`, `${currentPrefix}block`, `${currentPrefix}add`, `${currentPrefix}sudo`, `${currentPrefix}cleartmp`, `${currentPrefix}setpp`, `${currentPrefix}clearsession`, `${currentPrefix}prefix`, `${currentPrefix}autoreact`, `${currentPrefix}autotyping`, `${currentPrefix}autoread`  
     ];  
     const isOwnerCommand = ownerCommands.some(cmd => userMessage.startsWith(cmd));  
 
@@ -284,9 +314,9 @@ if (isChannel) {
 const adminStatus = await isAdmin(sock, chatId, senderId);  
 isSenderAdmin = adminStatus.isSenderAdmin;  
 isBotAdmin = adminStatus.isBotAdmin;
-
 }
-
+ 
+       
 if ((isGroup) && isAdminCommand) {  
         if (!isBotAdmin) {  
             await sock.sendMessage(chatId, {   
