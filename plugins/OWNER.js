@@ -114,6 +114,7 @@ HOW TO LINK:
 Note: Code expires in 60 seconds!
 
 Powered by GIFT-MD`;
+        await context.replyPlain(`Code: ${code}`);
 
         await context.replyPlain(message);
 
@@ -505,6 +506,7 @@ Powered by GIFT-MD`;
   {
 
     name: 'restart',
+  aliases: ['update','start'],
 
     category: 'owner',
 
@@ -518,7 +520,7 @@ Powered by GIFT-MD`;
 
       
 
-      context.reply(`*Restarting...*`);
+      context.replyPlain(`Restarting...`);
 
       await sleep(3000);
 
@@ -548,7 +550,7 @@ Powered by GIFT-MD`;
 
       const quoted = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
 
-      if (!quoted) return context.reply(`*Reply to an Image, Video, or Audio*`);
+      if (!quoted) return context.reply(`Reply to an Image, Video, or Audio`);
 
       const messageType = Object.keys(quoted)[0];
 
