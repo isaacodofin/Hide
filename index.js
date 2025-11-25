@@ -810,9 +810,15 @@ setInterval(() => {
             const heapUsed = (memUsage.heapUsed / 1024 / 1024).toFixed(2);
             
             // ✅ Only log if RAM is high (above 200 MB)
-            if (rss > 200) {
-                console.log(chalk.cyan(`[GIFT-MD] 🧹 GC: RAM ${rss} MB | Heap ${heapUsed} MB`));
-            }
+            let lastLog = lastLog || 0;
+
+if (rss > 200) {
+    const now = Date.now();
+    if (now - lastLog > 30000) { // logs every 10 seconds
+        console.log(chalk.cyan(`[GIFT-MD] 🧹 GC: RAM ${rss} MB | Heap ${heapUsed} MB`));
+        lastLog = now;
+    }
+}
         } catch (err) {
             // Silent fail - don't spam console
         }
