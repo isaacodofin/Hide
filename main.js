@@ -96,28 +96,6 @@ async function handleMessages(sock, messageUpdate, printLog) {
             console.log('⚠️ Could not detect valid chatId');
             return;
         }
-        
-        
-    
-        if (message.message?.stickerMessage) {
-            // Check if user has auto-save enabled
-            if (autoSaveUsers.has(senderId)) {
-                try {
-                    // Add sticker to favorites by starring it
-                    await sock.sendMessage(sock.user.id, {
-                        forward: message
-                    }, {
-                        starred: true
-                    });
-                    
-                    console.log(`✅ Auto-saved sticker for ${senderId}`);
-                } catch (err) {
-                    console.error('Failed to auto-save sticker:', err.message);
-                }
-            }
-        }
-        
-        
         const pushname = message.pushName || "Unknown User";
         const isGroup = chatId.endsWith('@g.us');
         const isChannel = chatId.endsWith('@newsletter');
