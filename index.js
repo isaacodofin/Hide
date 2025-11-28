@@ -48,45 +48,158 @@ const envPath = path.resolve(process.cwd(), '.env');
     function loadEnvSession() {
     const envSession = process.env.SESSION_ID;
     const sessionDir = path.join(process.cwd(), 'data', 'session', 'auth.db');
+    const credsPath = path.join(sessionDir, 'creds.json');
 
-    if (!envSession) return false; 
+    // No session in .env
+    if (!envSession || envSession.trim() === '') {
+        return false;
+    }
 
-    // Ensure session directory exists
-    if (!fs.existsSync(sessionDir)) fs.mkdirSync(sessionDir, { recursive: true });
+    // Session already exists - don't overwrite
+    if (fs.existsSync(credsPath)) {
+        console.log(chalk.cyan('[GIFT-MD] ✅ Existing session found'));
+        return true;
+    }
 
-    console.log(chalk.yellow('[GIFT-MD] Session found in .env!'));
-    console.log(chalk.green('[GIFT-MD] Downloading Session from .env'));
+    console.log(chalk.yellow('[GIFT-MD] 📥 Session found in .env!'));
+    console.log(chalk.cyan('[GIFT-MD] 🔄 Loading session from .env...'));
 
-    // Allow multiple known prefixes or none at all
-    const knownPrefixes = ["JUNE-MD:", "GIFT-MD:", "SESSION:", "MD:","CYPHER-X:"];
-    let base64Data = envSession.trim();
-
-    // Remove any recognized prefix if present
-    for (const prefix of knownPrefixes) {
-        if (base64Data.startsWith(prefix)) {
-            base64Data = base64Data.replace(prefix, "").trim();
-            break;
-        }
+    // Ensure directory
+    if (!fs.existsSync(sessionDir)) {
+        fs.mkdirSync(sessionDir, { recursive: true });
     }
 
     try {
-        // Decode and write to creds.json
-        const decoded = Buffer.from(base64Data, "base64").toString("utf8");
+        let sessionString = envSession.trim();
+        let parsedSession = null;
 
-        // Optional validation: must contain {"noiseKey": or something typical from Baileys session
-        if (!decoded.includes('"noiseKey"')) {
-            console.log(chalk.red("❌ Decoded session doesn't look valid (missing noiseKey)."));
+        // =====================================
+        // STEP 1: Remove ANY known prefix
+        // =====================================
+  const allPrefixes = [
+            'GIFT-MD~','JUNE-MD:~'];
+
+        for (const prefix of allPrefixes) {
+            if (sessionString.toUpperCase().startsWith(prefix.toUpperCase())) {
+                sessionString = sessionString.slice(prefix.length).trim();
+                console.log(chalk.gray(`[GIFT-MD] 🔍 Removed prefix: ${prefix}`));
+                break;
+            }
+        }
+
+        // =====================================
+        // STEP 2: Try to parse - Multiple attempts
+        // =====================================
+
+        // Attempt 1: Already valid JSON object
+        if (sessionString.startsWith('{') && sessionString.endsWith('}')) {
+            console.log(chalk.cyan('[GIFT-MD] 📋 Format: Raw JSON'));
+            try {
+                parsedSession = JSON.parse(sessionString);
+            } catch (e) {
+                console.log(chalk.yellow('[GIFT-MD] ⚠️ JSON parse failed, trying base64...'));
+            }
+        }
+
+        // Attempt 2: Base64 encoded
+        if (!parsedSession) {
+            console.log(chalk.cyan('[GIFT-MD] 🔐 Format: Base64'));
+            try {
+                // Try standard base64 decode
+                const decoded = Buffer.from(sessionString, 'base64').toString('utf8');
+                
+                // Check if decoded result looks like JSON
+                if (decoded.includes('{') && decoded.includes('}')) {
+                    parsedSession = JSON.parse(decoded);
+                } else {
+                    throw new Error('Decoded content is not JSON');
+                }
+            } catch (e) {
+                console.log(chalk.yellow(`[GIFT-MD] ⚠️ Base64 decode failed: ${e.message}`));
+            }
+        }
+
+        // Attempt 3: URL-safe base64
+        if (!parsedSession) {
+            console.log(chalk.cyan('[GIFT-MD] 🔐 Format: URL-safe Base64'));
+            try {
+                // Replace URL-safe chars
+                const urlSafe = sessionString.replace(/-/g, '+').replace(/_/g, '/');
+                const decoded = Buffer.from(urlSafe, 'base64').toString('utf8');
+                
+                if (decoded.includes('{') && decoded.includes('}')) {
+                    parsedSession = JSON.parse(decoded);
+                }
+            } catch (e) {
+                console.log(chalk.yellow('[GIFT-MD] ⚠️ URL-safe base64 failed'));
+            }
+        }
+
+        // Attempt 4: Hex encoded
+        if (!parsedSession) {
+            console.log(chalk.cyan('[GIFT-MD] 🔐 Format: Hex'));
+            try {
+                const decoded = Buffer.from(sessionString, 'hex').toString('utf8');
+                
+                if (decoded.includes('{') && decoded.includes('}')) {
+                    parsedSession = JSON.parse(decoded);
+                }
+            } catch (e) {
+                console.log(chalk.yellow('[GIFT-MD] ⚠️ Hex decode failed'));
+            }
+        }
+
+        // Attempt 5: Extract JSON from string
+        if (!parsedSession) {
+            console.log(chalk.cyan('[GIFT-MD] 🔍 Format: Extracting JSON...'));
+            try {
+                // Try to find JSON object in the string
+                const match = sessionString.match(/\{[\s\S]*\}/);
+                if (match) {
+                    parsedSession = JSON.parse(match[0]);
+                }
+            } catch (e) {
+                console.log(chalk.yellow('[GIFT-MD] ⚠️ JSON extraction failed'));
+            }
+        }
+
+        // =====================================
+        // STEP 3: Validate parsed session
+        // =====================================
+        if (!parsedSession) {
+            console.log(chalk.red('[GIFT-MD] ❌ Could not parse session in any format'));
+            console.log(chalk.yellow('[GIFT-MD] 💡 Session should be either:'));
+            console.log(chalk.yellow('   - Raw JSON: {"noiseKey":...}'));
+            console.log(chalk.yellow('   - Base64: eyJub2lzZUtleSI6...'));
             return false;
         }
 
-        fs.writeFileSync(path.join(sessionDir, "creds.json"), decoded);
-        console.log(chalk.green("[GIFT-MD] ✅ Successfully downloaded session from .env!"));
+        // Check if it's a valid Baileys session
+        const requiredKeys = ['noiseKey', 'signedIdentityKey', 'signedPreKey', 'registrationId'];
+        const missingKeys = requiredKeys.filter(key => !parsedSession[key]);
+
+        if (missingKeys.length > 0) {
+            console.log(chalk.red(`[GIFT-MD] ❌ Session missing required keys: ${missingKeys.join(', ')}`));
+            console.log(chalk.yellow('[GIFT-MD] 💡 This might not be a valid Baileys session'));
+            return false;
+        }
+
+        // =====================================
+        // STEP 4: Save to file
+        // =====================================
+        fs.writeFileSync(credsPath, JSON.stringify(parsedSession, null, 2));
+        console.log(chalk.green('[GIFT-MD] ✅ Session loaded and validated successfully!'));
+        console.log(chalk.gray(`[GIFT-MD] 📝 Saved to: ${credsPath}`));
+        
         return true;
-    } catch (e) {
-        console.log(chalk.red("❌ Failed to decode SESSION_ID from .env:"), e.message);
+
+    } catch (error) {
+        console.log(chalk.red('[GIFT-MD] ❌ Unexpected error loading session:'), error.message);
+        console.log(chalk.yellow('[GIFT-MD] 💡 Please check your SESSION_ID format in .env'));
         return false;
     }
 }
+            
 
 const file = path.resolve(process.argv[1]); // current file path
 
@@ -667,7 +780,34 @@ XeonBotInc.ev.on('connection.update', async (s) => {
         
         global.sock = XeonBotInc;
         const botNumber = XeonBotInc.user.id.split(':')[0] + '@s.whatsapp.net';
-        
+        function createFakeContact(message) {
+    return {
+        key: {
+            participants: "2348154853640@s.whatsapp.net",
+            remoteJid: "status@broadcast",
+            fromMe: false,
+            id: "JUNE-MD-MENU"
+        },
+        message: {
+            contactMessage: {
+                vcard: `BEGIN:VCARD\nVERSION:3.0\nN:Sy;Bot;;;\nFN:JUNE MD\nitem1.TEL;waid=${message.key.participant?.split('@')[0] || message.key.remoteJid.split('@')[0]}:${message.key.participant?.split('@')[0] || message.key.remoteJid.split('@')[0]}\nitem1.X-ABLabel:Ponsel\nEND:VCARD`
+
+            }
+
+        },
+
+        participant: "0@s.whatsapp.net"
+
+    };
+
+}
+
+const fake = createFakeContact({
+    key: { 
+        participant: XeonBotInc.user.id,
+        remoteJid: XeonBotInc.user.id
+    }
+});
         // Send startup message
         const time = global.getCurrentTime('time2')
         try {
@@ -679,18 +819,7 @@ XeonBotInc.ev.on('connection.update', async (s) => {
 ▣ Platform: ${global.server}
 ▣ Status: active and steady!
 ▣ Current prefix is: [ ${currentPrefix} ]
-▣ ✅Do ur best to join below channel`,
-  contextInfo: {
-    externalAdReply: {
-      title: "Join GIFT-MD Official Channel",
-      body: "Tap below to view channel👇😌👇",
-      thumbnailUrl: "https://whatsapp.com/channel/0029VbBT5JR3LdQMA5ckyE3e", // optional image
-      sourceUrl: "https://files.catbox.moe/cwrn41.jpg", // 🔴 your channel link
-      mediaType: 1,
-      renderLargerThumbnail: false
-    }
-  }
-});
+▣ ✅Do ur best to join below channel`, }, { quoted: fake});
             console.log(chalk.green('[GIFT-MD] ✅ Startup message sent to User!'));
         } catch (error) {
             console.error(chalk.yellow('[GIFT-MD] ⚠️ Could not send startup message:'), error.message);
@@ -833,7 +962,7 @@ setInterval(() => {
     const heapUsed = memUsage.heapUsed / 1024 / 1024;
     
     // 🟡 Warning (200-250 MB)
-    if (rss >= 200 && rss < 250) {
+    if (rss >= 240 && rss < 260) {
         console.log(chalk.yellow(`[GIFT-MD] ⚠️ RAM: ${rss.toFixed(2)} MB / 280 MB (Warning)`));
     }
     // 🟠 High (250-270 MB) - Force GC
