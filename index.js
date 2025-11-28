@@ -752,16 +752,32 @@ phoneNumber = phoneNumber.replace(/[^0-9]/g, '');
             console.log(chalk.cyan.bold('⏱️  Code expires in 1 minute'))
             console.log('')
 
-        } catch (error) {
-            console.error('')
-            console.log(chalk.red('❌ Failed to generate pairing code'))
-            console.log(chalk.yellow('Error details:'), error.message)
-            console.log(chalk.gray('Please check your internet connection and try again'))
-            process.exit(1)
+         } catch (error) {
+    const msg = String(error?.message || '').toLowerCase();
+
+    if (msg.includes('connection closed') || msg.includes('closed')) {
+        console.log(chalk.red('⚠ Connection closed — clearing previous sessions...'));
+
+        try {
+            await deleteSessionFolder();
+            console.log(chalk.green('✔ Sessions cleared successfully.'));            console.log(chalk.green('Wait for restart to pair, else restart manually'));
+        } catch (err) {
+            console.log(chalk.red('❌ Failed to clear sessions:'), err.message);
         }
+
+        process.exit(1);
+    }
+
+    // Default error handling
+    console.log(chalk.red('❌ Failed to generate pairing code'));
+    console.log(chalk.yellow('Error details:'), error.message);
+    process.exit(1);
+}    
     }, 3000)
 }
 
+    let reconnectAttempts = 0;
+const MAX_RECONNECT_ATTEMPTS = 5;
     // Connection handling
 // Connection handling
 XeonBotInc.ev.on('connection.update', async (s) => {
@@ -771,7 +787,7 @@ XeonBotInc.ev.on('connection.update', async (s) => {
         console.log(chalk.green('┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓'))
         console.log(chalk.green('┃') + chalk.white.bold('        ✅ CONNECTION SUCCESSFUL!     ') + chalk.green('  ┃'))
         console.log(chalk.green('┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛'))
-        
+        reconnectAttempts = 0;
         // Extract LID
         if (XeonBotInc.user.lid) {
             global.ownerLid = XeonBotInc.user.lid.split(':')[0];
@@ -832,43 +848,118 @@ const fake = createFakeContact({
         initializeCallHandler(XeonBotInc);
     }
     
-    // ✅ SIMPLIFIED CONNECTION CLOSE HANDLER
+   
     if (connection === 'close') {
         const statusCode = lastDisconnect?.error?.output?.statusCode;
         
         console.log(chalk.yellow(`[GIFT-MD] ⚠️ Connection closed. Status code: ${statusCode}`));
         
-        // Only delete session on logout or bad auth
+        // ✅ Handle 401 - Unauthorized (logged out or bad auth)
         if (statusCode === DisconnectReason.loggedOut || statusCode === 401) {
             console.log(chalk.red('[GIFT-MD] 🚨 Logged out - deleting session'));
             deleteSessionFolder();
             await delay(5000);
-            process.exit(0); // Exit - require manual restart
+            process.exit(0);
         } 
-        // For badSession, also delete
+        
+        // ✅ Handle badSession
         else if (statusCode === DisconnectReason.badSession) {
             console.log(chalk.red('[GIFT-MD] 🚨 Bad session - deleting and restarting'));
             deleteSessionFolder();
+            reconnectAttempts = 0;
             await delay(3000);
             startXeonBotInc();
         }
-        // For all other disconnects, just reconnect
-        else {
-       await delay(10000);
-            console.log(chalk.cyan('[GIFT-MD] 🔄 Reconnecting...'));
-            await delay(3000); // 3 second delay
+        
+        // ✅ Handle 500 - Internal Server Error
+        else if (statusCode === 500) {
+            console.log(chalk.red('[GIFT-MD] 🚨 Server error (500) - Session may be corrupted'));
+            
+            if (reconnectAttempts >= 3) {
+                console.log(chalk.red('[GIFT-MD] 🗑️ Too many 500 errors - deleting session'));
+                deleteSessionFolder();
+                reconnectAttempts = 0;
+                await delay(5000);
+                startXeonBotInc();
+            } else {
+                reconnectAttempts++;
+                console.log(chalk.yellow(`[GIFT-MD] 🔄 Retry ${reconnectAttempts}/3 in 30 seconds...`));
+                await delay(30000);
+                startXeonBotInc();
+            }
+        }
+        
+        // ✅ Handle 515 - Restart required (old code)
+        else if (statusCode === 515) {
+            console.log(chalk.yellow('[GIFT-MD] 🔄 Restart required (515) - Restarting...'));
+            reconnectAttempts = 0;
+            await delay(3000);
             startXeonBotInc();
         }
+        
+        // ✅ Handle 516 - Restart required (NEW!)
+        else if (statusCode === 516) {
+            console.log(chalk.yellow('[GIFT-MD] 🔄 Restart required (516) - Restarting...'));
+            reconnectAttempts = 0;
+            await delay(3000);
+            startXeonBotInc();
+        }
+        
+        // ✅ Handle 428 - Connection closed (normal)
+        else if (statusCode === 428) {
+            console.log(chalk.cyan('[GIFT-MD] 🔄 Connection lost (428) - Reconnecting...'));
+            reconnectAttempts = 0;
+            await delay(5000);
+            startXeonBotInc();
+        }
+        
+        // ✅ Handle 408 - Timeout
+        else if (statusCode === 408) {
+            console.log(chalk.yellow('[GIFT-MD] ⏱️ Connection timeout (408) - Retrying...'));
+            reconnectAttempts = 0;
+            await delay(5000);
+            startXeonBotInc();
+        }
+        
+        // ✅ Handle timedOut
+        else if (statusCode === DisconnectReason.timedOut) {
+            console.log(chalk.yellow('[GIFT-MD] ⏱️ Connection timed out - Reconnecting...'));
+            reconnectAttempts = 0;
+            await delay(5000);
+            startXeonBotInc();
+        }
+        
+        // ✅ Handle connectionLost
+        else if (statusCode === DisconnectReason.connectionLost) {
+            console.log(chalk.cyan('[GIFT-MD] 📡 Connection lost - Reconnecting...'));
+            reconnectAttempts = 0;
+            await delay(5000);
+            startXeonBotInc();
+        }
+        
+        // ✅ Handle all other errors
+        else {
+            if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+                console.log(chalk.red(`[GIFT-MD] ❌ Max reconnection attempts (${MAX_RECONNECT_ATTEMPTS}) reached`));
+                console.log(chalk.yellow('[GIFT-MD] 🗑️ Deleting session and restarting...'));
+                deleteSessionFolder();
+                reconnectAttempts = 0;
+                await delay(5000);
+                startXeonBotInc();
+            } else {
+                reconnectAttempts++;
+                console.log(chalk.cyan(`[GIFT-MD] 🔄 Reconnecting... (Attempt ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})`));
+                await delay(10000);
+                startXeonBotInc();
+            }
+        }
     }
-})    
+});
+    
+    
+ XeonBotInc.ev.on('creds.update', saveCreds)
 
-    XeonBotInc.ev.on('creds.update', saveCreds)
-
-    // Group participants update
-    XeonBotInc.ev.on("group-participants.update", async (anu) => {
-        await handleGroupParticipantUpdate(XeonBotInc, anu);
-    })
-
+   
     return XeonBotInc
 }
 
