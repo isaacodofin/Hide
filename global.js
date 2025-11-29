@@ -105,5 +105,16 @@ global.gdrive= {
   }
 };
 
-
+global.gitclone = {
+  key: {
+    remoteJid: '0@s.whatsapp.net',
+    fromMe: false,
+    participant: '0@s.whatsapp.net'
+  },
+  message: {
+    extendedTextMessage: {
+      text: `🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗:🇳🇬\n.𝗚𝗜𝗧𝗖𝗟𝗢𝗡𝗘_𝗖𝗢𝗠𝗠𝗔𝗡𝗗`
+    }
+  }
+};
 
