@@ -40,6 +40,7 @@ import { rmSync, existsSync } from 'fs';
 import { join } from 'path';
 import store from './lib/lightweight.js';
 import os from 'os';
+import "../Quote.js";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -796,34 +797,7 @@ XeonBotInc.ev.on('connection.update', async (s) => {
         
         global.sock = XeonBotInc;
         const botNumber = XeonBotInc.user.id.split(':')[0] + '@s.whatsapp.net';
-        function createFakeContact(message) {
-    return {
-        key: {
-            participants: "2348154853640@s.whatsapp.net",
-            remoteJid: "status@broadcast",
-            fromMe: false,
-            id: "JUNE-MD-MENU"
-        },
-        message: {
-            contactMessage: {
-                vcard: `BEGIN:VCARD\nVERSION:3.0\nN:Sy;Bot;;;\nFN:JUNE MD\nitem1.TEL;waid=${message.key.participant?.split('@')[0] || message.key.remoteJid.split('@')[0]}:${message.key.participant?.split('@')[0] || message.key.remoteJid.split('@')[0]}\nitem1.X-ABLabel:Ponsel\nEND:VCARD`
-
-            }
-
-        },
-
-        participant: "0@s.whatsapp.net"
-
-    };
-
-}
-
-const fake = createFakeContact({
-    key: { 
-        participant: XeonBotInc.user.id,
-        remoteJid: XeonBotInc.user.id
-    }
-});
+        
         // Send startup message
         const time = global.getCurrentTime('time2')
         try {
@@ -835,7 +809,7 @@ const fake = createFakeContact({
 ▣ Platform: ${global.server}
 ▣ Status: active and steady!
 ▣ Current prefix is: [ ${currentPrefix} ]
-▣ ✅Do ur best to join below channel`, }, { quoted: fake});
+▣ ✅Do ur best to join below channel`, }, { quoted: global.StUp});
             console.log(chalk.green('[GIFT-MD] ✅ Startup message sent to User!'));
         } catch (error) {
             console.error(chalk.yellow('[GIFT-MD] ⚠️ Could not send startup message:'), error.message);
