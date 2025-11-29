@@ -40,7 +40,7 @@ import { rmSync, existsSync } from 'fs';
 import { join } from 'path';
 import store from './lib/lightweight.js';
 import os from 'os';
-import "./Quote.js";
+//import "./Quote.js";
 import dotenv from "dotenv";
 dotenv.config();
 
