@@ -304,7 +304,7 @@ execute: async (sock, message, args, context) => {
 
       if (!text)
 
-        return context.reply(`GitHub link to clone?\nExample :\n${global.prefix}gitclone https://github.com/Dark-Xploit/CypherX`,{global.gitclone});
+        return context.reply(`GitHub link to clone?\nExample :\n${global.prefix}gitclone https://github.com/Dark-Xploit/CypherX`);
 
       
 
