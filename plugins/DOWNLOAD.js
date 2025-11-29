@@ -23,7 +23,7 @@ export default [
 
       const text = args.slice(1).join(' ');
 
-      if (!text) return context.reply("*Which apk do you want to download?*");
+      if (!text) return context.reply("Which apk do you want to download?",{ quoted: global.apk});
 
       
 
@@ -67,15 +67,13 @@ export default [
 
             }
 
-          },
-
-          { quoted: message }
+          },{ quoted: global.apk}
 
         );
 
       } catch (error) {
 
-        context.reply("❌ Error downloading APK. Please try again later.");
+        context.reply("❌ Error downloading APK. Please try again later.",{ quoted: global.apk});
 
       }
 
@@ -95,7 +93,7 @@ export default [
 
       const text = args.slice(1).join(' ');
 
-      if (!text) return context.reply('Enter download URL');
+      if (!text) return context.reply('Enter download URL',{ quoted: global.download});
 
       
 
@@ -169,7 +167,7 @@ export default [
 
         }
 
-        sock.sendMessage(context.chatId, { document: buffer, mimetype: mimeType, fileName: filename }, { quoted: message });
+        sock.sendMessage(context.chatId, { document: buffer, mimetype: mimeType, fileName: filename },{ quoted: global.download});
 
       } catch (error) {
 
@@ -222,7 +220,7 @@ execute: async (sock, message, args, context) => {
 
       const text = args.slice(1).join(' ');
 
-      if (!text) return context.reply("*Please provide a Google Drive file URL*");
+      if (!text) return context.reply("Please provide a Google Drive file URL",{ quoted: global.gdrive});
 
       try {
 
@@ -232,7 +230,7 @@ execute: async (sock, message, args, context) => {
 
         if (response.status !== 200 || !data.status || !data.data) {
 
-          return context.reply("Please try again later or try another command!");
+          return context.reply("Please try again later or try another command!",{quoted: global.gdrive});
 
         } else {
 
@@ -264,7 +262,7 @@ execute: async (sock, message, args, context) => {
 
               mimetype: fileResponse.headers['content-type']
 
-            });
+            },{quoted: global.gdrive});
 
             fs.unlinkSync(filePath);
 
@@ -274,7 +272,7 @@ execute: async (sock, message, args, context) => {
 
             console.error('Error downloading the file:', err);
 
-            context.reply("An error occurred while downloading the file.");
+            context.reply("An error occurred while downloading the file.",{quoted: global.gdrive});
 
           });
 
@@ -322,7 +320,7 @@ execute: async (sock, message, args, context) => {
 
       if (!repo) {
 
-        return context.reply("*Invalid GitHub link format. Please double-check the provided link.*");
+        return context.reply("Invalid GitHub link format. Please double-check the provided link.");
 
       }
 
@@ -359,8 +357,7 @@ execute: async (sock, message, args, context) => {
             mimetype: "application/zip",
 
           },
-
-          { quoted: message }
+{ quoted: global.gitclone }
 
         );
 
@@ -390,7 +387,7 @@ execute: async (sock, message, args, context) => {
 
       const text = args.slice(1).join(' ');
 
-      if (!text) return context.reply("*Please provide a search query*");
+      if (!text) return context.reply("Please provide a search query");
 
       try {
 
