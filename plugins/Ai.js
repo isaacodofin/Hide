@@ -27,7 +27,7 @@ export default[
 
         if (!query) {
 
-            return await context.reply("Please provide a question after .gpt \n\nExample: .gpt write a basic html code");
+            return await context.reply('Please provide a question after .gpt \n\nExample: .gpt write a basic html code', { quoted: global.Ai});
 
         }
 
@@ -65,13 +65,7 @@ export default[
 
             console.error('API Error:', error);
 
-            await sock.sendMessage(chatId, {
-
-                text: "❌ Failed to get response. Please try again later.",
-
-                ...channelInfo
-
-            }, { quoted: message });
+            await context.reply("❌ Failed to get response. Please try again later.", { quoted: global.Ai});
 
         }
 
@@ -90,7 +84,7 @@ export default[
             const input = args.slice(1).join(' ');
 
             if (!input) {
-                return await reply('❌ Provide a prompt.\n\n📝 Example: .sora anime girl with short blue hair');
+                return await reply('❌ Provide a prompt.\n\n📝 Example: .sora anime girl with short blue hair', { quoted: global.sora});
             }
 
             await react('⏳');
@@ -113,12 +107,12 @@ export default[
                 video: { url: videoUrl },
                 mimetype: 'video/mp4',
                 caption: `✨ Sora AI Video\n\n📝 Prompt: ${input}`
-            }, { quoted: message });
+            }, { quoted: global.sora});
 
         } catch (error) {
             console.error('[SORA] error:', error?.message || error);
             await react('❌');
-            await reply('⚠️ Failed to generate video. Try a different prompt later.');
+            await reply('⚠️ Failed to generate video. Try a different prompt later.', { quoted: global.sora});
         }
     }
 } ]
