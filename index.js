@@ -40,7 +40,7 @@ import { rmSync, existsSync } from 'fs';
 import { join } from 'path';
 import store from './lib/lightweight.js';
 import os from 'os';
-//import "./Quote.js";
+import "./global.js";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -796,20 +796,41 @@ XeonBotInc.ev.on('connection.update', async (s) => {
         }
         
         global.sock = XeonBotInc;
+        function createFakeContact(message) {
+    return {
+        key: {
+            participants: "0@s.whatsapp.net",
+            remoteJid: "0@s.whatsapp.net",
+            fromMe: false
+        },
+        message: {
+            contactMessage: {
+              displayName: `🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗:🇳🇬\n🌟:𝗕𝗢𝗢𝗧 𝗠𝗘𝗦𝗦𝗔𝗚𝗘:🌟`,
+                vcard: `BEGIN:VCARD\nVERSION:3.0\nN:Sy;Bot;;;\nFN:JUNE MD\nitem1.TEL;waid=${message.key.participant?.split('@')[0] || message.key.remoteJid.split('@')[0]}:${message.key.participant?.split('@')[0] || message.key.remoteJid.split('@')[0]}\nitem1.X-ABLabel:Ponsel\nEND:VCARD`
+
+            }
+
+        },
+
+        participant: "0@s.whatsapp.net"
+
+    };
+
+}
+
+const fake= createFakeContact({
+    key: { 
+        participant: XeonBotInc.user.id,
+        remoteJid: XeonBotInc.user.id
+    }});
+        
         const botNumber = XeonBotInc.user.id.split(':')[0] + '@s.whatsapp.net';
         
         // Send startup message
         const time = global.getCurrentTime('time2')
         try {
             await XeonBotInc.sendMessage(botNumber, {
-                text: `╔═▣══════════▣╗
-║       ▣ GIFT - MD ▣     ║
-╚═▣══════════▣╝
-▣ Time: ${time}
-▣ Platform: ${global.server}
-▣ Status: active and steady!
-▣ Current prefix is: [ ${currentPrefix} ]
-▣ ✅Do ur best to join below channel`, }, { quoted: global.StUp});
+                text: `╔═▣══════════▣╗\n║       ▣ GIFT - MD ▣     ║\n╚═▣══════════▣╝\n▣ Time: ${time}\n▣ Platform: ${global.server}\n▣ Status: active and steady!\n▣ Current prefix is: [ ${currentPrefix} ]\n▣ ✅Do ur best to join below channel`, }, { quoted: fake});
             console.log(chalk.green('[GIFT-MD] ✅ Startup message sent to User!'));
         } catch (error) {
             console.error(chalk.yellow('[GIFT-MD] ⚠️ Could not send startup message:'), error.message);
