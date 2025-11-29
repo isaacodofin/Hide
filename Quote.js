@@ -65,5 +65,4 @@ function createFakeContact(message) {
 global.StUp= createFakeContact({
     key: { 
         participant: global.sock.user.id,
-        remoteJid: global.sock.user.id
-                                                                                                                                                                             }
+        remoteJid: global.sock.user.id}})
