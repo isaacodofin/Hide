@@ -26,7 +26,7 @@
 };
 
 
-global. h= {
+global.sticker= {
   key: {
     remoteJid: '0@s.whatsapp.net',
     fromMe: false,
@@ -34,7 +34,34 @@ global. h= {
   },
   message: {
     extendedTextMessage: {
-      text: "🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗_🇳🇬"
+      text: `🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗:🇳🇬\n.𝗦𝗧𝗜𝗖𝗞𝗘𝗥_𝗖𝗢𝗠𝗠𝗔𝗡𝗗`
+    }
+  }
+};
+
+global.MediaInfo= {
+  key: {
+    remoteJid: '0@s.whatsapp.net',
+    fromMe: false,
+    participant: '0@s.whatsapp.net'
+  },
+  message: {
+    extendedTextMessage: {
+      text: `🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗:🇳🇬\n.𝗠𝗘𝗗𝗜𝗔𝗜𝗡𝗙𝗢_𝗖𝗢𝗠𝗠𝗔𝗡𝗗`
+    }
+  }
+};
+
+
+global.emojimix= {
+  key: {
+    remoteJid: '0@s.whatsapp.net',
+    fromMe: false,
+    participant: '0@s.whatsapp.net'
+  },
+  message: {
+    extendedTextMessage: {
+      text: `🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗:🇳🇬\n.𝗘𝗠𝗢𝗝𝗜𝗠𝗜𝗫_𝗖𝗢𝗠𝗠𝗔𝗡𝗗`
     }
   }
 };
