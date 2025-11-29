@@ -1,7 +1,7 @@
 //=======°°°°°°°°°°′°°°°=========//
 
 
-/**1*/ let menu = {
+/**1*/ global.M= {
   key: {
     remoteJid: '0@s.whatsapp.net',
     fromMe: false,
@@ -12,9 +12,7 @@
       text: "🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗_.𝗠𝗘𝗡𝗨"
     }}};
 
-global.m = menu;
-
-/**2*/ let alive = {
+/**2*/ global.A= {
   key: {
     remoteJid: '0@s.whatsapp.net',
     fromMe: false,
@@ -27,5 +25,17 @@ global.m = menu;
   }
 };
 
-global.A = alive;
+
+global.StUp= {
+  key: {
+    remoteJid: '0@s.whatsapp.net',
+    fromMe: false,
+    participant: '0@s.whatsapp.net'
+  },
+  message: {
+    extendedTextMessage: {
+      text: "🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗_.𝗠𝗘𝗡𝗨"
+    }
+  }
+};
 
