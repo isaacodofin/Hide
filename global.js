@@ -1,7 +1,7 @@
 //=======°°°°°°°°°°′°°°°=========//
 const prefix = global.prefix; 
 console.log("prefix",global.prefix);
-console.log("prefix",${prefix});
+console.log("prefix",prefix);
 
 /**≠≠==≠====={Aicmd}==========≠=*/
 
