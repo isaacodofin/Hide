@@ -58,8 +58,6 @@ const restorePresenceSettings = async (sock) => {
 };
 //console.clear();
 // ===== HANDLE MESSAGES ======//
-
-import "./global.js";
   
 
 async function handleMessages(sock, messageUpdate, printLog) {
