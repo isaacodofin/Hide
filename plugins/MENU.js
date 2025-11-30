@@ -436,11 +436,11 @@ if (menuAudio === "on") {
         const randomAudio = defaultAudios[Math.floor(Math.random() * defaultAudios.length)];
 
         // Temp output path for ogg file
-        const outputFile = path.join("./Data/temp", `voice_${Date.now()}.ogg`);
+        const outputFile = path.join("./data/temp", `voice_${Date.now()}.ogg`);
 
         // Ensure temp folder exists
-        if (!fs.existsSync("./Data/temp")) {
-            fs.mkdirSync("./Data/temp");
+        if (!fs.existsSync("./data/temp")) {
+            fs.mkdirSync("./data/temp");
         }
 
         // Convert to ogg/opus with ffmpeg
