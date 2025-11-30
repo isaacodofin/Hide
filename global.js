@@ -1,4 +1,6 @@
 //=======°°°°°°°°°°′°°°°=========//
+global.initializeGlobals = function() {
+  
 const prefix = global.prefix; 
 console.log("prefix",global.prefix);
 console.log("prefix",prefix);
@@ -340,3 +342,35 @@ global.fliptext = {
     }
   }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  };
+// Initialize once when loaded
+global.initializeGlobals();
