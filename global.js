@@ -232,7 +232,7 @@ global.owner= {
   }
 };
 
-global.prefix = {
+global.prfx = {
   key: {
     remoteJid: '0@s.whatsapp.net',
     fromMe: false,
