@@ -32,7 +32,7 @@ export default [
 
                 
 
-                await context.reply(`🤖 Bot Runtime\n\n⏰ Uptime: ${runtimeText}\n📅 Started: ${formatDate(Date.now() - (uptime * 1000))}`);
+                await context.reply(`🤖 Bot Runtime\n\n⏰ Uptime: ${runtimeText}\n📅 Started: ${formatDate(Date.now() - (uptime * 1000))}`,{quoted: global.RTM});
 
                 
 
@@ -40,7 +40,7 @@ export default [
 
                 console.error('Error in runtime command:', error);
 
-                await context.replyPlain('❌ Error getting runtime information.');
+                await context.replyPlain('❌ Error getting runtime information.',{quoted: global.RTM});
 
             }
 
@@ -242,13 +242,13 @@ await context.react('❄️');
 
             try {
 await context.react('ℹ️');
-                const currentDate = formatDate(Date.now());
+                const currentDate = global.getCurrentTime('full');
 
-                const tanggalDate = tanggal(Date.now());
+                const tanggalDate = global.getCurrentTimezone;
 
                 
 
-                await context.replyPlain(`📅 Current Date\n\n📆 Full Date: ${currentDate}\n🗓️ Indonesian Format: ${tanggalDate}`);
+                await context.replyPlain(`📅 Current Date\n\n📆 Full Date: ${currentDate}\n🗓️ Time Zone:  ${tanggalDate}`,{quoted: global.Daté});
 
                 
 
@@ -256,7 +256,7 @@ await context.react('ℹ️');
 
                 console.error('Error in date command:', error);
 
-                await context.reply('❌ Error getting current date.');
+                await context.reply('❌ Error getting current date.',{quoted: global.Daté});
 
             }
 
@@ -434,7 +434,7 @@ await context.react('🥳')
 
         if (!senderIsSudo) {
         await react('😝')
-            return await reply('❌ Only owner can change front styles.');
+            return await reply('❌ Only owner can change front styles',{quoted: global.setfot});
 
         }
 
@@ -444,9 +444,7 @@ await context.react('🥳')
 
             return await reply(
 
-                `📝 Font Style Manager\n\nCurrent style: ${currentStyle}\n\nUsage:\n• .setfont list - Show all styles\n• .setfont <style> - Set font style\n• .setfont current - Show current style`
-
-            );
+                `📝 Font Style Manager\n\nCurrent style: ${currentStyle}\n\nUsage:\n• .setfont list - Show all styles\n• .setfont <style> - Set font style\n• .setfont current - Show current style`,{quoted: global.setfot});
 
         }
 
@@ -482,7 +480,7 @@ await context.react('🥳')
 
             
 
-            return await reply(styleList);
+            return await reply(styleList,{quoted: global.setfot});
 
         }
 
@@ -500,9 +498,7 @@ await context.react('🥳')
 
                 `Style: ${currentStyle}\n` +
 
-                `Preview: ${sampleText}`
-
-            );
+                `Preview: ${sampleText}`,{quoted: global.setfot});
 
         }
 
@@ -520,9 +516,7 @@ await context.react('🥳')
 
                 `Available styles:\n${availableStyles.map(s => `• ${s}`).join('\n')}\n\n` +
 
-                `Use .setfont list to see all options.`
-
-            );
+                `Use .setfont list to see all options.`,{quoted: global.setfot});
 
         }
 
@@ -548,13 +542,11 @@ await context.react('🥳')
 
                 `Preview: ${sampleText}\n\n` +
 
-                `All bot responses will now use this formatting.`
-
-            );
+                `All bot responses will now use this formatting.`,{quoted: global.setfot});
 
         } else {
 
-            await reply('❌ Failed to update font style. Please try again.');
+            await reply('❌ Failed to update font style. Please try again.',{quoted: global.setfot});
 
         }
 
@@ -712,7 +704,7 @@ await context.react('🥳')
 ║ 💻 Platform: ${os.type()} (${os.arch()})
 ┗▣══════════════▣╝`;
 
-                await context.replyWithAd(info.trim());
+                await context.replyWithAd(info.trim(),{quoted: global.btf});
             } catch (err) {
                 console.error("Error in .botinfo:", err);
                 await context.reply("❌ Failed to fetch bot info.");
@@ -734,7 +726,7 @@ await context.react('🥳')
                 let seconds = Math.floor(totalSeconds % 60);
                 let uptimeStr = `${days}d ${hours}h ${minutes}m ${seconds}s`;
 
-                await context.reply(`🤯 Uptime: ${uptimeStr}`);
+                await context.reply(`🤯 Active Time: ${uptimeStr}`, { quoted: global.upt });
             } catch (e) {
                 console.error(e);
                 await context.reply('❌ Error getting uptime.');
@@ -815,7 +807,7 @@ await context.react('🥳')
 │
 ╰───────────────`;
 
-                await context.reply(panel);
+                await context.reply(panel,{quoted: global.mmr});
             } catch (err) {
                 console.error(err);
                 await context.reply("❌ Error fetching system info.");
@@ -841,8 +833,7 @@ await context.react('🥳')
             const speedText = applyFontStyle(`Speed: ${speed}ms`);
             await sock.sendMessage(chatId, { 
                 text: speedText, 
-                edit: sentMsg.key 
-            });
+                edit: sentMsg.key,{quoted: global.ping}});
         }
     },
 
@@ -856,7 +847,7 @@ await context.react('🥳')
             
             await sock.sendMessage(chatId, { 
                 text: aliveText 
-            }, { quoted: message });
+            }, { quoted: global.alive });
         }
     },
     {
@@ -952,7 +943,7 @@ await context.react('🥳')
 
       const url = await handleMediaUpload(quoted, sock, messageType);
 
-      await context.reply(`✅ Uploaded Successfully!\n\n🔗 ${url}`);
+      await context.reply(`✅ Uploaded Successfully!\n\n🔗 ${url}`,{quoted: global.url});
 
     } catch (e) {
 
@@ -963,7 +954,7 @@ await context.react('🥳')
 },
     {
     name: 'take',
-    aliases: ['steal'],
+    aliases: ['takesticker'],
     category: 'sticker',
     description: 'Change sticker pack name',
     usage: '.take <packname> (reply to sticker)',
@@ -979,7 +970,7 @@ await context.react('🥳')
             return await reply('❌ Reply to a sticker with .take <packname>');
         }
 
-        const packname = args.slice(1).join(' ') || 'Knight Bot';
+        const packname = args.slice(1).join(' ') || '𝐆𝐈𝐅𝐓_𝐌𝐃';
 
         try {
             await react('🔄');
@@ -1022,7 +1013,7 @@ await context.react('🥳')
            await sock.sendMessage(chatId, {
                 sticker: finalBuffer
             }, {
-                quoted: message
+                quoted: global.takeStk
             });
 
             await react('✅');
