@@ -408,7 +408,7 @@ global.anime = {
 };
 
 //========[MENU CMD]===≠=========\\
-  global.quote = {
+  global.menu = {
   key: {
     remoteJid: '0@s.whatsapp.net',
     fromMe: false,
@@ -416,11 +416,12 @@ global.anime = {
   },
   message: {
     extendedTextMessage: {
-      text: `🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗:🇳🇬||${prefix}𝗤𝗨𝗢𝗧𝗘𝗦_𝗖𝗢𝗠𝗠𝗔𝗡𝗗`
+      text: `🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗:🇳🇬||${prefix}𝗠𝗘𝗡𝗨_𝗖𝗢𝗠𝗠𝗔𝗡𝗗`
     }
   }
 };
-  global.quote = {
+  
+  global.setmenu = {
   key: {
     remoteJid: '0@s.whatsapp.net',
     fromMe: false,
@@ -428,11 +429,11 @@ global.anime = {
   },
   message: {
     extendedTextMessage: {
-      text: `🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗:🇳🇬||${prefix}𝗤𝗨𝗢𝗧𝗘𝗦_𝗖𝗢𝗠𝗠𝗔𝗡𝗗`
+      text: `🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗:🇳🇬||${prefix}𝗦𝗘𝗧𝗠𝗘𝗡𝗨_𝗖𝗢𝗠𝗠𝗔𝗡𝗗`
     }
   }
 };
-  global.quote = {
+  global.setmenuimg = {
   key: {
     remoteJid: '0@s.whatsapp.net',
     fromMe: false,
@@ -440,25 +441,12 @@ global.anime = {
   },
   message: {
     extendedTextMessage: {
-      text: `🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗:🇳🇬||${prefix}𝗤𝗨𝗢𝗧𝗘𝗦_𝗖𝗢𝗠𝗠𝗔𝗡𝗗`
-    }
-  }
-};
-
-  global.quote = {
-  key: {
-    remoteJid: '0@s.whatsapp.net',
-    fromMe: false,
-    participant: '0@s.whatsapp.net'
-  },
-  message: {
-    extendedTextMessage: {
-      text: `🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗:🇳🇬||${prefix}𝗤𝗨𝗢𝗧𝗘𝗦_𝗖𝗢𝗠𝗠𝗔𝗡𝗗`
+      text: `🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗:🇳🇬||${prefix}𝗦𝗘𝗧𝗠𝗘𝗡𝗨𝗜𝗠𝗚_𝗖𝗢𝗠𝗠𝗔𝗡𝗗`
     }
   }
 };
 
-global.quote = {
+  global.maudio = {
   key: {
     remoteJid: '0@s.whatsapp.net',
     fromMe: false,
@@ -466,7 +454,20 @@ global.quote = {
   },
   message: {
     extendedTextMessage: {
-      text: `🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗:🇳🇬||${prefix}𝗤𝗨𝗢𝗧𝗘𝗦_𝗖𝗢𝗠𝗠𝗔𝗡𝗗`
+      text: `🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗:🇳🇬||${prefix}𝗠𝗔𝗨𝗗𝗜𝗢_𝗖𝗢𝗠𝗠𝗔𝗡𝗗`
+    }
+  }
+};
+
+global.menuInfo = {
+  key: {
+    remoteJid: '0@s.whatsapp.net',
+    fromMe: false,
+    participant: '0@s.whatsapp.net'
+  },
+  message: {
+    extendedTextMessage: {
+      text: `🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗:🇳🇬||${prefix}𝗠𝗘𝗡𝗨𝗜𝗡𝗙𝗢_𝗖𝗢𝗠𝗠𝗔𝗡𝗗`
     }
   }
 };
