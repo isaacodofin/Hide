@@ -118,3 +118,81 @@ global.gitclone = {
   }
 };
 
+global.work = {
+  key: {
+    remoteJid: '0@s.whatsapp.net',
+    fromMe: false,
+    participant: '0@s.whatsapp.net'
+  },
+  message: {
+    extendedTextMessage: {
+      text: `🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗:🇳🇬||.𝗪𝗢𝗥𝗞_𝗖𝗢𝗠𝗠𝗔𝗡𝗗`
+    }
+  }
+};
+
+global.transfer = {
+  key: {
+    remoteJid: '0@s.whatsapp.net',
+    fromMe: false,
+    participant: '0@s.whatsapp.net'
+  },
+  message: {
+    extendedTextMessage: {
+      text: `🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗:🇳🇬||.𝗧𝗥𝗔𝗡𝗦𝗙𝗘𝗥_𝗖𝗢𝗠𝗠𝗔𝗡𝗗`
+    }
+  }
+};
+
+global.gamble = {
+  key: {
+    remoteJid: '0@s.whatsapp.net',
+    fromMe: false,
+    participant: '0@s.whatsapp.net'
+  },
+  message: {
+    extendedTextMessage: {
+      text: `🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗:🇳🇬||.𝗚𝗔𝗠𝗕𝗟𝗘_𝗖𝗢𝗠𝗠𝗔𝗡𝗗`
+    }
+  }
+};
+
+global.learderboard = {
+  key: {
+    remoteJid: '0@s.whatsapp.net',
+    fromMe: false,
+    participant: '0@s.whatsapp.net'
+  },
+  message: {
+    extendedTextMessage: {
+      text: `🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗:🇳🇬||.𝗟𝗘𝗔𝗗𝗘𝗥𝗕𝗢𝗔𝗥𝗗_𝗖𝗢𝗠𝗠𝗔𝗡𝗗`
+    }
+  }
+};
+
+global.daily = {
+  key: {
+    remoteJid: '0@s.whatsapp.net',
+    fromMe: false,
+    participant: '0@s.whatsapp.net'
+  },
+  message: {
+    extendedTextMessage: {
+      text: `🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗:🇳🇬||.𝗗𝗔𝗜𝗟𝗬_𝗖𝗢𝗠𝗠𝗔𝗡𝗗`
+    }
+  }
+};
+
+global.balance = {
+  key: {
+    remoteJid: '0@s.whatsapp.net',
+    fromMe: false,
+    participant: '0@s.whatsapp.net'
+  },
+  message: {
+    extendedTextMessage: {
+      text: `🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗:🇳🇬||.𝗕𝗔𝗟𝗔𝗡𝗖𝗘_𝗖𝗢𝗠𝗠𝗔𝗡𝗗`
+    }
+  }
+};
+
