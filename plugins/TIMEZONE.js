@@ -10,7 +10,7 @@ import {
     formatTimezoneList, 
     findTimezone,
     DEFAULT_TIMEZONE 
-} from '../lib/timezone.js';
+} from '../lib/myfunc.js';
 
 export default [
     {
