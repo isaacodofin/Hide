@@ -100,7 +100,7 @@ async function sendAnimu(sock, chatId, message, type, context) {
                     image: res.data, 
                     caption: `✨ Anime ${type.charAt(0).toUpperCase() + type.slice(1)}\n${context.channelInfo?.body || ''}`,
                     ...context.channelInfo
-                }, { quoted: message });
+                }, { quoted: global.anime });
                 return;
             }
         } catch (error) {
@@ -120,7 +120,7 @@ async function sendAnimu(sock, chatId, message, type, context) {
                     image: res.data, 
                     caption: `✨ Anime ${type.charAt(0).toUpperCase() + type.slice(1)}\n${context.channelInfo?.body || ''}`,
                     ...context.channelInfo
-                }, { quoted: message });
+                }, { quoted: global.anime });
                 return;
             }
         } catch (error) {
@@ -140,7 +140,7 @@ async function sendAnimu(sock, chatId, message, type, context) {
                 image: { url: data.link }, 
                 caption: `✨ Anime ${type.charAt(0).toUpperCase() + type.slice(1)}\n${context.channelInfo?.body || ''}`,
                 ...context.channelInfo
-            }, { quoted: message });
+            }, { quoted: global.anime });
             return;
         }
         
@@ -456,7 +456,7 @@ export default [
 
         await reply(
     `🔥 Hey @${userToInsult.split('@')[0]}, ${insult}`,
-    { quoted: message, mentions: [userToInsult] }
+    { quoted: global.insult, mentions: [userToInsult] }
 );
 
     }
@@ -766,7 +766,7 @@ await context.reply(
       }
       
       const textquotes = `QUOTE: ${quoteData.quote}\n\nAUTHOR: ${quoteData.author}`;
-      return context.reply(textquotes);
+      return context.reply(textquotes,{quoted: global.quote});
       
     } catch (err) {
       console.error(err);
@@ -795,7 +795,7 @@ await context.reply(
 
       if (!text) {
 
-        return context.reply(`Example: ${prefix}xxqc pink hello\n\nColour list\npink\nblue\nred\ngreen\nyellow\npurple\ndarkblue\nlightblue\nash\norange\nblack\nwhite\nteal\nlightpink\nchocolate\nsalmon\nmagenta\ntan\nwheat\ndeeppink\nfire\nskyblue\nbrightskyblue\nhotpink\nlightskyblue\nseagreen\ndarkred\norangered\ncyan\nviolet\nmossgreen\ndarkgreen\nnavyblue\ndarkorange\ndarkpurple\nfuchsia\ndarkmagenta\ndarkgray\npeachpuff\nblackishgreen\ndarkishred\ngoldenrod\ndarkishgray\ndarkishpurple\ngold\nsilver`);
+        return context.reply(`Example: ${prefix}xxqc pink hello\n\nColour list\npink\nblue\nred\ngreen\nyellow\npurple\ndarkblue\nlightblue\nash\norange\nblack\nwhite\nteal\nlightpink\nchocolate\nsalmon\nmagenta\ntan\nwheat\ndeeppink\nfire\nskyblue\nbrightskyblue\nhotpink\nlightskyblue\nseagreen\ndarkred\norangered\ncyan\nviolet\nmossgreen\ndarkgreen\nnavyblue\ndarkorange\ndarkpurple\nfuchsia\ndarkmagenta\ndarkgray\npeachpuff\nblackishgreen\ndarkishred\ngoldenrod\ndarkishgray\ndarkishpurple\ngold\nsilver`,{quoted:global.xxqc});
 
       }
 
@@ -969,7 +969,7 @@ await context.reply(
 
           sticker: buffer,
 
-        }, { quoted: message });
+        },{quoted:global.xxqc});
 
       } catch (error) {
 
