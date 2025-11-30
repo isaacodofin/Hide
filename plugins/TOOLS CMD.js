@@ -153,19 +153,6 @@ export default [
         }
     }
 },
-{
-    name: 'fliptext',
-    aliases: ['flip'],
-    category: 'TOOLS MENU',
-    execute: async (sock, message, args, context) => {
-        const prefix = global.prefix;
-        
-        if (args.length < 2) return context.reply(`Example:\n${prefix}fliptext Tylor`);
-        let flips = args.slice(1).join(" ");
-        let flipx = flips.split("").reverse().join("");
-        context.reply(`Normal:\n${flips}\n\nFlip:\n${flipx}`);
-    }
-},
  {
     name: 'gsmarena',
     aliases: [],
@@ -229,7 +216,7 @@ export default [
         const { chatId, reply, react, hasQuotedMessage } = context;
 
         if (!hasQuotedMessage) {
-            return await reply('❌ 𝐏𝐥𝐞𝐚𝐬𝐞 𝐫𝐞𝐩𝐥𝐲 𝐭𝐨 𝐚 𝐯𝐢𝐞𝐰-𝐨𝐧𝐜𝐞 𝐢𝐦𝐚𝐠𝐞 𝐨𝐫 𝐯𝐢𝐝𝐞𝐨.');
+            return await reply('❌ 𝐏𝐥𝐞𝐚𝐬𝐞 𝐫𝐞𝐩𝐥𝐲 𝐭𝐨 𝐚 𝐯𝐢𝐞𝐰-𝐨𝐧𝐜𝐞 𝐢𝐦𝐚𝐠𝐞 𝐨𝐫 𝐯𝐢𝐝𝐞𝐨.',{quoted: global.vv});
         }
 
         try {
@@ -249,7 +236,7 @@ export default [
                     fileName: 'media.jpg', 
                     caption: quotedImage.caption || '𝐏𝐨𝐰𝐞𝐫𝐞𝐝 𝐛𝐲 𝐆𝐢𝐟𝐭-𝐌𝐃',
                     ...context.channelInfo
-                }, { quoted: message });
+                },{quoted: global.vv});
             } else if (quotedVideo && quotedVideo.viewOnce) {
                 const stream = await downloadContentFromMessage(quotedVideo, 'video');
                 let buffer = Buffer.from([]);
@@ -260,12 +247,12 @@ export default [
                     fileName: 'media.mp4', 
                     caption: quotedVideo.caption || '𝐏𝐨𝐰𝐞𝐫𝐞𝐝 𝐛𝐲 𝐆𝐢𝐟𝐭-𝐌𝐃',
                     ...context.channelInfo
-                }, { quoted: message });
+                },{quoted: global.vv});
             } else {
-                await reply('❌ 𝐏𝐥𝐞𝐚𝐬𝐞 𝐫𝐞𝐩𝐥𝐲 𝐭𝐨 𝐚 𝐯𝐢𝐞𝐰-𝐨𝐧𝐜𝐞 𝐢𝐦𝐚𝐠𝐞 𝐨𝐫 𝐯𝐢𝐝𝐞𝐨.');
+                await reply('❌ 𝐏𝐥𝐞𝐚𝐬𝐞 𝐫𝐞𝐩𝐥𝐲 𝐭𝐨 𝐚 𝐯𝐢𝐞𝐰-𝐨𝐧𝐜𝐞 𝐢𝐦𝐚𝐠𝐞 𝐨𝐫 𝐯𝐢𝐝𝐞𝐨.',{quoted: global.vv});
             }
         } catch (error) {
-            await reply('𝐅𝐚𝐢𝐥𝐞𝐝 𝐭𝐨 𝐩𝐫𝐨𝐜𝐞𝐬𝐬 𝐯𝐢𝐞𝐰-𝐨𝐧𝐜𝐞 𝐦𝐞𝐝𝐢𝐚.');
+            await reply('𝐅𝐚𝐢𝐥𝐞𝐝 𝐭𝐨 𝐩𝐫𝐨𝐜𝐞𝐬𝐬 𝐯𝐢𝐞𝐰-𝐨𝐧𝐜𝐞 𝐦𝐞𝐝𝐢𝐚.',{quoted: global.vv});
         }
     }
 },
@@ -591,7 +578,7 @@ END:VCARD
 
         await context.replyPlain({
             contacts: { displayName: settings.botOwner, contacts: [{ vcard }] },
-        });
+        },{quoted: global.owner});
     }
     },
     {
@@ -633,7 +620,7 @@ END:VCARD
 
                 
 
-                await reply(prefixInfo);
+                await reply(prefixInfo,{quoted: global.prefix});
 
                 
 
@@ -677,7 +664,7 @@ END:VCARD
 
                     await react('❌');
 
-                    return await reply('Only the bot owner can change the prefix.');
+                    return await reply('Only the bot owner can change the prefix.',{quoted: global.setprefix});
 
                 }
 
@@ -693,7 +680,7 @@ END:VCARD
 
                     await react('❌');
 
-                    return await reply('Please provide a new prefix.\n\nUsage:\n• .setprefix ! - Set prefix to !\n• .setprefix none - Remove prefix\n• .setprefix 0 - Remove prefix');
+                    return await reply('Please provide a new prefix.\n\nUsage:\n• .setprefix ! - Set prefix to !\n• .setprefix none - Remove prefix\n• .setprefix 0 - Remove prefix',{quoted: global.setprefix});
 
                 }
 
@@ -721,7 +708,7 @@ END:VCARD
 
                         await react('❌');
 
-                        return await reply('Prefix cannot be longer than 5 characters.');
+                        return await reply('Prefix cannot be longer than 5 characters.',{quoted: global.setprefix});
 
                     }
 
@@ -733,7 +720,7 @@ END:VCARD
 
                         await react('❌');
 
-                        return await reply('Prefix cannot contain @ or # symbols.');
+                        return await reply('Prefix cannot contain @ or # symbols.',{quoted: global.setprefix});
 
                     }
 
@@ -773,7 +760,7 @@ END:VCARD
 
                     
 
-                    await reply(responseMessage);
+                    await reply(responseMessage,{quoted: global.setprefix});
 
                     
 
@@ -783,7 +770,7 @@ END:VCARD
 
                     await react('❌');
 
-                    await reply('Failed to update prefix in database. Please try again.');
+                    await reply('Failed to update prefix in database. Please try again.',{quoted: global.setprefix});
 
                 }
 
@@ -795,7 +782,7 @@ END:VCARD
 
                 await context.react('❌');
 
-                await context.reply('Error changing prefix. Please try again.');
+                await context.reply('Error changing prefix. Please try again.',{quoted: global.setprefix});
 
             }
 
@@ -812,7 +799,7 @@ END:VCARD
         try {
             await context.react('☢️');
             if (!global.commands || !(global.commands instanceof Map)) {
-                return sock.sendMessage(msg.key.remoteJid, { text: "⚠ Commands are not loaded yet." }, { quoted: msg });
+                return sock.sendMessage(msg.key.remoteJid, { text: "⚠ Commands are not loaded yet." }, { quoted: global.listcmd});
             }
 
             // Get all command names
@@ -826,7 +813,7 @@ END:VCARD
             await context.replyPlain(
                 
                 { text: `📜 Loaded Commands:\n\n${formatted}` },
-                { quoted: msg }
+                { quoted: global.listcmd}
             );
 
         } catch (err) {
@@ -839,7 +826,6 @@ END:VCARD
 {
 
   name: 'url',
-
   description: 'Upload media to get a link',
 
   category: 'utility',
@@ -848,7 +834,7 @@ END:VCARD
 
     const quoted = m.message?.extendedTextMessage?.contextInfo?.quotedMessage;
 
-    if (!quoted) return context.reply('❌ Reply to an image/video/document/audio to use this command.');
+    if (!quoted) return context.reply('❌ Reply to an image/video/document/audio to use this command.',{quoted: global.url});
 
     let messageType = Object.keys(quoted)[0];
 
@@ -856,11 +842,11 @@ END:VCARD
 
       const url = await handleMediaUpload(quoted, sock, messageType);
 
-      await context.reply(`✅ Uploaded Successfully!\n\n🔗 ${url}`);
+      await context.reply(`✅ Uploaded Successfully!\n\n🔗 ${url}`,{quoted: global.url});
 
     } catch (e) {
 
-      await context.reply(`❌ Failed to upload media: ${e.message}`);
+      await context.reply(`❌ Failed to upload media: ${e.message}`,{quoted: global.url});
 
     }
 
@@ -1051,7 +1037,7 @@ END:VCARD
         const mediaMessage = targetMessage.message?.imageMessage || targetMessage.message?.videoMessage || targetMessage.message?.documentMessage;
 
         if (!mediaMessage) {
-            return await reply('Please reply to an image/video with .sticker, or send an image/video with .sticker as the caption.');
+            return await reply('Please reply to an image/video with .sticker, or send an image/video with .sticker as the caption.',{quoted: global.sticker});
         }
 
         try {
@@ -1063,7 +1049,7 @@ END:VCARD
             });
 
             if (!mediaBuffer) {
-                return await reply('Failed to download media. Please try again.');
+                return await reply('Failed to download media. Please try again.',{quoted: global.sticker});
             }
 
             const tmpDir = path.join(process.cwd(), 'tmp');
@@ -1113,7 +1099,7 @@ END:VCARD
 
             await sock.sendMessage(chatId, { 
                 sticker: finalBuffer
-            }, { quoted: messageToQuote });
+            }, ,{quoted: global.sticker});
 
             await react('✅');
 
@@ -1146,10 +1132,10 @@ END:VCARD
                 
                 if (!text) {
                  await context.react('📄');
-                    return await context.reply('❌ Please provide some text to convert to PDF!\n\nUsage: `.topdf Hello World`');
+                    return await context.reply('❌ Please provide some text to convert to PDF!\n\nUsage: `.topdf Hello World`',{quoted: global.pdf});
                 }
                 await context.react('♻️');
-                await context.reply('📄 Creating PDF document...');
+                await context.reply('📄 Creating PDF document...',{quoted: global.pdf});
                 
                 // Ensure temp directory exists
                 const tempDir = path.join(__dirname, '../temp');
@@ -1188,16 +1174,16 @@ END:VCARD
                             mimetype: 'application/pdf',
                             fileName: `converted_${Date.now()}.pdf`,
                             ...channelInfo
-                        }, { quoted: message });
+                        },{quoted: global.pdf});
                         await context.react('💚');
-                        await context.reply('✅ PDF created successfully!');
+                        await context.reply('✅ PDF created successfully!',{quoted: global.pdf});
                         
                         // Cleanup temp file
                         fs.unlinkSync(filePath);
                         
                     } catch (sendError) {
                         console.error('PDF send error:', sendError);
-                        await context.reply('❌ Failed to send PDF file!');
+                        await context.reply('❌ Failed to send PDF file!',{quoted: global.pdf});
                         // Still cleanup the file
                         if (fs.existsSync(filePath)) {
                             fs.unlinkSync(filePath);
@@ -1228,7 +1214,7 @@ END:VCARD
 
         // Check if user has permission (you can adjust this)
         if (!isFromOwner && !senderIsSudo) {
-            return await reply('❌ Only owner/sudo can create groups!');
+            return await reply('❌ Only owner/sudo can create groups!',{quoted: global.creategc});
         }
 
         // Get group name
@@ -1244,7 +1230,7 @@ Usage:
 Examples:
 • .creategc Isaac - Create group "Isaac"
 • .creategc Isaac 2341234567890,2349876543210 - Create with members
-• Reply to contact file: .creategc Isaac - Add VCF contacts`);
+• Reply to contact file: .creategc Isaac - Add VCF contacts`,{quoted: global.creategc});
         }
 
         try {
@@ -1281,7 +1267,7 @@ Examples:
                         
                     } catch (error) {
                         console.error('❌ VCF processing error:', error);
-                        await reply('❌ Failed to process VCF file. Creating group without members.');
+                        await reply('❌ Failed to process VCF file. Creating group without members.',{quoted: global.creategc});
                     }
                 }
             }
@@ -1299,14 +1285,14 @@ Examples:
                 }
                 
                 if (participants.length > 0) {
-                    await reply(`📱 Found ${participants.length} phone numbers!`);
+                    await reply(`📱 Found ${participants.length} phone numbers!`,{quoted: global.creategc});
                 }
             }
             
             // Validate participants (check if they're on WhatsApp)
             const validParticipants = [];
             if (participants.length > 0) {
-                await reply(`🔍 Validating ${participants.length} phone numbers...`);
+                await reply(`🔍 Validating ${participants.length} phone numbers...`,{quoted: global.creategc});
                 
                 for (const participant of participants) {
                     try {
@@ -1319,7 +1305,7 @@ Examples:
                     }
                 }
                 
-                await reply(`✅ ${validParticipants.length} valid WhatsApp numbers found!`);
+                await reply(`✅ ${validParticipants.length} valid WhatsApp numbers found!`,{quoted: global.creategc});
             }
             
             // Create the group
@@ -1359,7 +1345,7 @@ This group was created using Gift MD Bot.
 Group Link: ${groupLink}`
                 });
                 
-                await reply(successMsg);
+                await reply(successMsg,{quoted: global.creategc});
                 
             } else {
                 throw new Error('Group creation returned invalid data');
