@@ -405,7 +405,7 @@ const time = global.getCurrentTime('time2');
 
                     try {
 
-                        await context.replyPlain({
+                        await context.reply({
 
                             image: { url: menuImage },
 
