@@ -314,6 +314,8 @@ global.getCurrentTimezone = getCurrentTimezone;
 global.channelLid = '120363403001461';
 global.startTime = Date.now();
 
+import "./global.js";
+
 const pairingCode = !!phoneNumber || process.argv.includes("--pairing-code")
 const useMobile = process.argv.includes("--mobile")
 
