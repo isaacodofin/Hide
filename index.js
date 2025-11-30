@@ -293,12 +293,10 @@ function deleteSessionFolder() {
                     
 let phoneNumber = "911234567890"
 let owner = JSON.parse(fs.readFileSync('./data/database.json')).settings.User;
-console.log('about.to load global variable');
 import db from './lib/database.js';
 // NEW - Use database settings first, fallback to settings.js
 global.server = detectHost();
 global.prefix = getSetting('prefix', settings.prefix);
-console.log("globalpAbove", global.prefix);
 global.mode = getSetting('mode', settings.mode);
 global.packname = getSetting('packname', settings.packname);
 global.botName = getSetting('botName', settings.botName);
@@ -314,9 +312,7 @@ global.getCurrentTime = getCurrentTime;
 global.getCurrentTimezone = getCurrentTimezone;
 global.channelLid = '120363403001461';
 global.startTime = Date.now();
- console.log('global prefix above going to import global');
 
-console.log('imported global.js');
 const pairingCode = !!phoneNumber || process.argv.includes("--pairing-code")
 const useMobile = process.argv.includes("--mobile")
 
