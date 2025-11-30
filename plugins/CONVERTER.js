@@ -754,7 +754,7 @@ export default [
 
                     ...channelInfo
 
-                }, { quoted: global.sticker});
+                },{quoted: global.sticker});
 
             } catch (error) {
 
@@ -810,7 +810,7 @@ export default [
 
                     ...channelInfo
 
-                }, { quoted: message });
+                },{ quoted: message });
 
             } catch (error) {
 
@@ -902,7 +902,7 @@ export default [
 
                 });
 
-                context.reply(infoText, { quoted: global.MediaInfo});
+                context.reply(infoText,{ quoted: global.MediaInfo});
 
             } catch (error) {
 
@@ -1015,7 +1015,7 @@ export default [
 
                 sticker: stickerBuffer 
 
-            }, { quoted: global.emojimix});
+            },{ quoted: global.emojimix});
 
             await react('✅');
 
@@ -1033,7 +1033,7 @@ export default [
 
         } catch (error) {
 
-            await reply('❌ Failed to mix emojis! Make sure you\'re using valid emojis.\n\nExample: .emojimix 😎+🥰',{ quoted: global.emojimix);
+            await reply('❌ Failed to mix emojis! Make sure you\'re using valid emojis.\n\nExample: .emojimix 😎+🥰',{ quoted: global.emojimix});
 
         }
 
