@@ -77,7 +77,7 @@ export default[
     execute: async (sock, message, args, context) => {
         const prefix = global.prefix;
         
-        if (args.length < 2) return context.reply(`Example:\n${prefix}fliptext Tylor`,{quoted: global.fliptext);
+        if (args.length < 2) return context.reply(`Example:\n${prefix}fliptext Tylor`,{quoted: global.fliptext});
         let flips = args.slice(1).join(" ");
         let flipx = flips.split("").reverse().join("");
         context.reply(`Normal:\n${flips}\n\nFlip:\n${flipx}`,{quoted: global.fliptext});
