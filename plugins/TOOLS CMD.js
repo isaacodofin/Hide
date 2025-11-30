@@ -1011,8 +1011,8 @@ END:VCARD
 
 },
     {
-    name: 'sticker',
-    aliases: ['tosticker', 'stiker'],
+    name: 'stiker',
+    aliases: ['tosticker'],
     category: 'converter',
     description: 'Convert image/video to sticker',
     usage: '.sticker (reply to image/video or send with caption)',
@@ -1099,7 +1099,7 @@ END:VCARD
 
             await sock.sendMessage(chatId, { 
                 sticker: finalBuffer
-            }, ,{quoted: global.sticker});
+            },{quoted: global.sticker});
 
             await react('✅');
 
