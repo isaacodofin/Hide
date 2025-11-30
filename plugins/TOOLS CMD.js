@@ -748,8 +748,8 @@ END:VCARD
 
                     // Update global variable immediately
 
-                    global.prefix = finalPrefix;
-
+global.prefix = finalPrefix;
+global.initializeGlobals();
                     
 
                     await react('✅');
