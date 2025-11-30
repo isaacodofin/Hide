@@ -44,7 +44,7 @@ export default [
 
                 await react('🎯');
 
-                await reply(`Game started! The word is: ${maskedWord}\n\nGuess letters using: .hangman <letter>`);
+                await reply(`Game started! The word is: ${maskedWord}\n\nGuess letters using: .hangman <letter>`,{ quoted:global.hangman});
 
             } else {
 
@@ -54,7 +54,7 @@ export default [
 
                 if (!hangmanGames[chatId]) {
 
-                    return await reply('No game in progress. Start a new game with .hangman');
+                    return await reply('No game in progress. Start a new game with .hangman',{ quoted:global.hangman});
 
                 }
 
@@ -64,7 +64,7 @@ export default [
 
                 if (guessedLetters.includes(letter)) {
 
-                    return await reply(`You already guessed "${letter}". Try another letter.`);
+                    return await reply(`You already guessed "${letter}". Try another letter.`,{ quoted:global.hangman});
 
                 }
 
@@ -82,7 +82,7 @@ export default [
 
                     }
 
-                    await reply(`Good guess! ${maskedWord.join(' ')}`);
+                    await reply(`Good guess! ${maskedWord.join(' ')}`,{ quoted:global.hangman});
 
                     if (!maskedWord.includes('_')) {
 
@@ -100,18 +100,12 @@ export default [
 
                     if (game.wrongGuesses >= maxWrongGuesses) {
 
-                        await reply(`Game over! The word was: ${word}`);
+                        await reply(`Game over! The word was: ${word}`,{ quoted:global.hangman});
 
                         delete hangmanGames[chatId];
-
-                    }
-
-                }
-
-            }
-
-        }
-
-    }
+}
+  }
+ } 
+} }
 
 ];
