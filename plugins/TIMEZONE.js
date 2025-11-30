@@ -92,10 +92,10 @@ export default [
             const list = formatTimezoneList();
             const currentTz = getCurrentTimezone();
             
-            const output = `🌍 *Available Timezones*\n\n` +
+            const output = `🌍 Available Timezones\n\n` +
                 `📍 Current: ${currentTz}\n` +
                 `${list}\n\n` +
-                `Use *${global.prefix}settimezone <zone>* to change`;
+                `Use ${global.prefix}settimezone <zone> to change`;
             
             await context.reply(output);
         }
