@@ -299,7 +299,7 @@ import db from './lib/database.js';
 // NEW - Use database settings first, fallback to settings.js
 global.server = detectHost();
 global.prefix = getSetting('prefix', settings.prefix);
-global.mode = getSetting('mode', settings.Mode);
+global.mode = getSetting('mode', settings.mode);
 global.packname = getSetting('packname', settings.packname);
 global.botName = getSetting('botName', settings.botName);
 global.botOwner = getSetting('botOwner', settings.botOwner);
@@ -312,6 +312,9 @@ global.devyt = "@officialGift-md";
 global.ytch = "Mr Unique Hacker";
 global.getCurrentTime = getCurrentTime;
 global.getCurrentTimezone = getCurrentTimezone;
+global.channelLid = '120363403001461';
+global.startTime = Date.now();
+
 
 const pairingCode = !!phoneNumber || process.argv.includes("--pairing-code")
 const useMobile = process.argv.includes("--mobile")
