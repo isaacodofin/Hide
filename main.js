@@ -68,10 +68,10 @@ async function handleMessages(sock, messageUpdate, printLog) {
         const message = messages[0];  
         if (!message?.message) return;
         
-       /** console.log("---- Incoming Message Object ----");
+        console.log("---- Incoming Message Object ----");
         console.log(JSON.stringify(message, (key, value) =>
             typeof value === "bigint" ? value.toString() : value
-        , 2));*/
+        , 2));
         
         const currentPrefix = global.prefix;
         
