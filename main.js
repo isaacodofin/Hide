@@ -75,15 +75,33 @@ async function handleMessages(sock, messageUpdate, printLog) {
         
         const currentPrefix = global.prefix;
         
-        // ✅ SMART AUTO-DETECTION - Always gets @s.whatsapp.net
+        /** ✅ SMART AUTO-DETECTION - Always gets @s.whatsapp.net
         const chatId = getChatId(message);
-        const senderId = getSenderId(message, sock);
+        const senderId = getSenderId(message, sock);*/
+        // ✅ SMART AUTO-DETECTION with FALLBACK
+let chatId = getChatId(message);
+let senderId = getSenderId(message, sock);
+
+// Fallback to basic Baileys if smart detection fails
+if (!chatId) {
+    chatId = message.key.remoteJid;
+}
+if (!senderId) {
+    senderId = message.key.participant || message.key.remoteJid;
+}
+
+// Now filter out broadcast/system messages
+if (!chatId || 
+    chatId === 'status@broadcast' || 
+    chatId.endsWith('@broadcast')) {
+    return; // Skip broadcast messages silently
+}
         
-        // Validation
+        /** Validation
         if (!chatId) {
             console.log('⚠️ Could not detect valid chatId');
             return;
-        }
+        }*/
         const pushname = message.pushName || "Unknown User";
         const isGroup = chatId.endsWith('@g.us');
         const isChannel = chatId.endsWith('@newsletter');
