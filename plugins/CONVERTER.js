@@ -724,13 +724,13 @@ export default [
 
             if (!media || (media.type !== 'image' && media.type !== 'video')) {
 
-                return context.reply('Reply to an image or video!');
+                return context.reply('Reply to an image or video!',{quoted: global.sticker});
 
             }
 
             try {
 
-                context.reply('🔄 Creating sticker...');
+                context.reply('🔄 Creating sticker...',{quoted: global.sticker});
 
                 const buffer = await downloadMedia(media.msg, media.type);
 
