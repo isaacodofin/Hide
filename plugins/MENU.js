@@ -354,17 +354,7 @@ export default [
 
                 // fallback audio list
 
-                const defaultAudios = [
-
-                    "https://files.catbox.moe/p9c9kk.mp3",
-
-                    "https://files.catbox.moe/9oaifh.mp3",
-
-                    "https://files.catbox.moe/vpd20k.mp3",
-
-                    "https://files.catbox.moe/tue3uc.mp3"
-
-                ];
+                const defaultAudios = [                  "https://files.catbox.moe/p9c9kk.mp3",                    "https://files.catbox.moe/9oaifh.mp3",                 "https://files.catbox.moe/vpd20k.mp3",                    "https://files.catbox.moe/tue3uc.mp3" ];
 
                 const menuAudio = db.settings.menuaudio || "off";
 
@@ -403,7 +393,7 @@ const time = global.getCurrentTime('time2');
 
                 if (menuStyle === "2") {
 
-                    await context.replyPlain(menuText);
+                    await context.replyPlain(menuText,{ quoted:global.menu});
 
                     return;
 
@@ -423,17 +413,17 @@ const time = global.getCurrentTime('time2');
 
                             ...context.channelInfo
 
-                        });
+                        },{ quoted:global.menu});
 
                     } catch (imageError) {
 
-                        await context.replyPlain(menuText + "\nMenu image failed to load");
+                        await context.replyPlain(menuText + "\nMenu image failed to load",{ quoted:global.menu});
 
                     }
 
                 } else {
 
-                    await context.replyPlain(menuText);
+                    await context.replyPlain(menuText,{ quoted:global.menu});
 
                 }
 
@@ -446,11 +436,11 @@ if (menuAudio === "on") {
         const randomAudio = defaultAudios[Math.floor(Math.random() * defaultAudios.length)];
 
         // Temp output path for ogg file
-        const outputFile = path.join("./temp", `voice_${Date.now()}.ogg`);
+        const outputFile = path.join("./Data/temp", `voice_${Date.now()}.ogg`);
 
         // Ensure temp folder exists
-        if (!fs.existsSync("./temp")) {
-            fs.mkdirSync("./temp");
+        if (!fs.existsSync("./Data/temp")) {
+            fs.mkdirSync("./Data/temp");
         }
 
         // Convert to ogg/opus with ffmpeg
@@ -516,7 +506,7 @@ if (menuAudio === "on") {
 
             if (!styleNumber || !['1', '2', '3', '4', '5'].includes(styleNumber)) {
 
-                return context.reply('Please specify a valid menu style (1-5)\nExample: .setmenu 1');
+                return context.reply('Please specify a valid menu style (1-5)\nExample: .setmenu 1',{quoted:global.setmenu});
 
             }
 
@@ -530,7 +520,7 @@ if (menuAudio === "on") {
 
             
 
-            await context.reply(`Menu style updated to ${styleNumber}! Use .menu to see the new style.`);
+            await context.reply(`Menu style updated to ${styleNumber}! Use .menu to see the new style.`,{quoted:global.setmenu});
 
         }
 
@@ -540,7 +530,7 @@ if (menuAudio === "on") {
     name: 'setmenuimg',
     aliases: ['menuimage', 'setmenuimage'],
     execute: async (sock, message, args, context) => {
-        if (!context.senderIsSudo) return context.reply('❌ This command is only available for the owner!');
+        if (!context.senderIsSudo) return context.reply('❌ This command is only available for the owner!',{quoted:global.setmenuimg});
         
         const imageUrl = args.slice(1).join(" ");
         if (!imageUrl) {
@@ -552,7 +542,7 @@ if (menuAudio === "on") {
                 `• files.catbox.moe\n` +
                 `• telegra.ph\n` +
                 `• imgur.com (direct links)`
-            );
+            ,{quoted:global.setmenuimg});
         }
         
         const db = loadDatabase();
@@ -560,13 +550,13 @@ if (menuAudio === "on") {
         if (imageUrl.toLowerCase() === 'off') {
             db.settings.menuimage = "";
             saveDatabase(db);
-            await context.reply('✅ Menu image disabled successfully!');
+            await context.reply('✅ Menu image disabled successfully!',{quoted:global.setmenuimg});
             return;
         }
 
         // Enhanced URL validation
         if (!imageUrl.startsWith('http')) {
-            return context.reply('❌ Please provide a valid image URL starting with http or https.');
+            return context.reply('❌ Please provide a valid image URL starting with http or https.',{quoted:global.setmenuimg});
         }
 
         // Check for problematic hosts
@@ -581,12 +571,12 @@ if (menuAudio === "on") {
                 `• Use telegra.ph\n` +
                 `• Try imgur.com direct links\n\n` +
                 `Proceeding anyway...`
-            );
+            ,{quoted:global.setmenuimg});
         }
 
         // Test the URL before saving
         try {
-            await context.replyPlain('🔄 Testing image URL...');
+            await context.replyPlain('🔄 Testing image URL...',{quoted:global.setmenuimg});
             
             const fetch = require('node-fetch');
             const response = await fetch(imageUrl, {
@@ -598,12 +588,12 @@ if (menuAudio === "on") {
             });
             
             if (!response.ok) {
-                return context.replyPlain(`❌ Image URL is not accessible. Status: ${response.status}\n\nPlease try a different URL.`);
+                return context.replyPlain(`❌ Image URL is not accessible. Status: ${response.status}\n\nPlease try a different URL.`,{quoted:global.setmenuimg});
             }
             
             const contentType = response.headers.get('content-type');
             if (!contentType || !contentType.startsWith('image/')) {
-                return context.replyPlain(`❌ URL does not point to a valid image.\n\nContent-Type: ${contentType || 'unknown'}`);
+                return context.replyPlain(`❌ URL does not point to a valid image.\n\nContent-Type: ${contentType || 'unknown'}`,{quoted:global.setmenuimg});
             }
             
         } catch (error) {
@@ -611,7 +601,7 @@ if (menuAudio === "on") {
                 `❌ Failed to verify image URL.\n\n` +
                 `Error: ${error.message}\n\n` +
                 `Please check the URL and try again.`
-            );
+            ,{quoted:global.setmenuimg});
         }
 
         db.settings.menuimage = imageUrl;
@@ -620,8 +610,7 @@ if (menuAudio === "on") {
         await context.reply(
             `✅ Menu image set successfully!\n\n` +
             `URL: ${imageUrl}\n\n` +
-            `Use ${global.prefix}menu to see the new image.`
-        );
+            `Use ${global.prefix}menu to see the new image.`,{quoted:global.setmenuimg});
     }
 },
 
@@ -644,7 +633,7 @@ if (menuAudio === "on") {
 
         if (!choice || !['on','off'].includes(choice)) {
 
-            return context.reply(`❌ Invalid usage.\n\nExample:\n${global.prefix}menuaudio on\n${global.prefix}menuaudio off`);
+            return context.reply(`❌ Invalid usage.\n\nExample:\n${global.prefix}menuaudio on\n${global.prefix}menuaudio off`,{quoted:global.maudio});
 
         }
 
@@ -652,7 +641,7 @@ if (menuAudio === "on") {
 
         saveDatabase(db);
 
-        await context.reply(`✅ Menu audio has been turned ${choice.toUpperCase()}!`);
+        await context.reply(`✅ Menu audio has been turned ${choice.toUpperCase()}!`,{quoted:global.maudio});
 
     }
 
@@ -725,7 +714,7 @@ if (menuAudio === "on") {
 
             info += `• ${global.prefix}menu - Show the menu`;
 
-            await context.reply(info);
+            await context.reply(info,{quoted: global.menuInfo});
 
         } catch (err) {
 
