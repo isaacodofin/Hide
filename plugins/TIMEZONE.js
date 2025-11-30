@@ -22,13 +22,13 @@ export default [
             const currentTz = getCurrentTimezone();
             const currentTime = getCurrentTime('full');
             
-            const info = `🕐 *Timezone Info*\n\n` +
+            const info = `🕐 Timezone Info\n\n` +
                 `📍 Current Timezone: ${currentTz}\n` +
                 `🕰️ Current Time: ${currentTime}\n\n` +
-                `Use *${global.prefix}settimezone <zone>* to change\n` +
-                `Use *${global.prefix}timezones* to see all options`;
+                `Use ${global.prefix}settimezone <zone> to change\n` +
+                `Use ${global.prefix}timezones to see all options`;
             
-            await context.reply(info);
+            await context.reply(info,{quoted: global.TZ});
         }
     },
     
@@ -39,7 +39,7 @@ export default [
         description: 'Set bot timezone',
         execute: async (sock, message, args, context) => {
             if (!context.senderIsSudo) {
-                return context.reply('❌ Only the owner can change timezone!');
+                return context.reply('❌ Only the owner can change timezone!',{quoted: global.STZ});
             }
             
             const timezone = args.slice(1).join('/'); // Handle "Africa Lagos" → "Africa/Lagos"
@@ -50,9 +50,8 @@ export default [
                     `Example:\n` +
                     `${global.prefix}settimezone Africa/Lagos\n` +
                     `${global.prefix}settimezone America/New_York\n\n` +
-                    `Use *${global.prefix}timezones* to see all options\n` +
-                    `Use *${global.prefix}findtz <name>* to search`
-                );
+                    `Use ${global.prefix}timezones to see all options\n` +
+                    `Use ${global.prefix}findtz <name> to search`,{quoted: global.STZ});
             }
             
             // Try to format input (handle both "Africa/Lagos" and "Africa Lagos")
@@ -67,8 +66,7 @@ export default [
                 const newTime = getCurrentTime('full');
                 await context.reply(
                     `✅ ${result.message}\n\n` +
-                    `🕰️ Current time: ${newTime}`
-                );
+                    `🕰️ Current time: ${newTime}`,{quoted: global.STZ});
             } else {
                 // Try to find similar timezones
                 const suggestions = findTimezone(timezone.split('/').pop() || timezone);
@@ -78,7 +76,7 @@ export default [
                     suggestionText = `\n\nDid you mean:\n${suggestions.map(s => `• ${s}`).join('\n')}`;
                 }
                 
-                await context.reply(`❌ ${result.message}${suggestionText}`);
+                await context.reply(`❌ ${result.message}${suggestionText}`,{quoted: global.STZ});
             }
         }
     },
@@ -97,7 +95,7 @@ export default [
                 `${list}\n\n` +
                 `Use ${global.prefix}settimezone <zone> to change`;
             
-            await context.reply(output);
+            await context.reply(output,{quoted: global.TZ});
         }
     },
     
@@ -115,26 +113,23 @@ export default [
                     `Example:\n` +
                     `${global.prefix}findtz lagos\n` +
                     `${global.prefix}findtz new york\n` +
-                    `${global.prefix}findtz tokyo`
-                );
+                    `${global.prefix}findtz tokyo`,{quoted: global.FTZ});
             }
             
             const results = findTimezone(search);
             
             if (results.length === 0) {
-                await context.reply(`❌ No timezones found matching "${search}"`);
+                await context.reply(`❌ No timezones found matching "${search}"`,{quoted: global.FTZ});
             } else if (results.length > 10) {
                 await context.reply(
                     `🔍 Found ${results.length} results. Showing first 10:\n\n` +
                     results.slice(0, 10).map((tz, i) => `${i + 1}. ${tz}`).join('\n') +
-                    `\n\nTry a more specific search.`
-                );
+                    `\n\nTry a more specific search.`,{quoted: global.FTZ});
             } else {
                 await context.reply(
-                    `🔍 *Found ${results.length} timezone(s):*\n\n` +
+                    `🔍 Found ${results.length} timezone(s):\n\n` +
                     results.map((tz, i) => `${i + 1}. ${tz}`).join('\n') +
-                    `\n\nUse *${global.prefix}settimezone <zone>* to set`
-                );
+                    `\n\nUse ${global.prefix}settimezone <zone> to set`,{quoted: global.FTZ});
             }
         }
     },
@@ -146,7 +141,7 @@ export default [
         description: 'Reset timezone to default',
         execute: async (sock, message, args, context) => {
             if (!context.senderIsSudo) {
-                return context.reply('❌ Only the owner can reset timezone!');
+                return context.reply('❌ Only the owner can reset timezone!',{quoted: global.RTZ});
             }
             
             const result = resetTimezone();
@@ -154,8 +149,7 @@ export default [
             
             await context.reply(
                 `✅ ${result.message}\n\n` +
-                `🕰️ Current time: ${newTime}`
-            );
+                `🕰️ Current time: ${newTime}`,{quoted: global.RTZ});
         }
     }
 ];
