@@ -40,7 +40,6 @@ import { rmSync, existsSync } from 'fs';
 import { join } from 'path';
 import store from './lib/lightweight.js';
 import os from 'os';
-import "./global.js";
 import dotenv from "dotenv";
 dotenv.config();
 
@@ -314,6 +313,7 @@ global.ytch = "Mr Unique Hacker";
 global.getCurrentTime = getCurrentTime;
 global.getCurrentTimezone = getCurrentTimezone;
 
+import "./global.js";
 const pairingCode = !!phoneNumber || process.argv.includes("--pairing-code")
 const useMobile = process.argv.includes("--mobile")
 
