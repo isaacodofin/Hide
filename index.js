@@ -791,7 +791,9 @@ XeonBotInc.ev.on('connection.update', async (s) => {
         console.log(chalk.green('┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓'))
         console.log(chalk.green('┃') + chalk.white.bold('        ✅ CONNECTION SUCCESSFUL!     ') + chalk.green('  ┃'))
         console.log(chalk.green('┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛'))
-        import "./global.js";
+     // Use dynamic import instead of static import
+    await import("./global.js");
+        
         reconnectAttempts = 0;
         // Extract LID
         if (XeonBotInc.user.lid) {
