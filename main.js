@@ -22,18 +22,8 @@ import {rainbow, pastel} from './lib/color.js';
 console.log(chalk.yellow('[GIFT-MD] initializing executor 🚀'));
 loadCommands();
 //.......................................................................................................................................................//
-// === GLOBALS ===
-global.channelLid = '120363403001461';
-global.prefix = getSetting('prefix', settings.prefix);
-global.mode = getSetting('mode', settings.mode); // fixed lowercase
-global.packname = getSetting('packname', settings.packname);
-global.botName = getSetting('botName', settings.botName);
-global.botOwner = getSetting('botOwner', settings.botOwner);
-global.version = getSetting('version', settings.version);
-global.startTime = Date.now();
-global.author = "ISAAC-FAVOUR";
-global.channelLink = "https://whatsapp.com/channel/0029Va90zAnIHphOuO8Msp3A";
-global.ytch = "Mr Unique Hacker";
+// === GLOBALS ===//
+// goto index global//
 
 // === RESTORE PRESENCE ===
 const restorePresenceSettings = async (sock) => {
@@ -69,7 +59,7 @@ const restorePresenceSettings = async (sock) => {
 //console.clear();
 // ===== HANDLE MESSAGES ======//
 
-
+import "./global.js";
   
 
 async function handleMessages(sock, messageUpdate, printLog) {
