@@ -393,8 +393,83 @@ global.anime = {
   }
 };
 
-//==≠=========[]""""""""""""''===\\
+//==≠==[GAME META AI QUOTE]======\\
+  global.hangman= {
+  key: {
+    remoteJid: '867051314767696@bot',
+    fromMe: false,
+    participant: '867051314767696@bot'
+  },
+  message: {
+    extendedTextMessage: {
+      text: `🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗:🇳🇬||${prefix}𝗛𝗔𝗡𝗚𝗠𝗔𝗡_𝗖𝗢𝗠𝗠𝗔𝗡𝗗`
+    }
+  }
+};
 
+//========[MENU CMD]===≠=========\\
+  global.quote = {
+  key: {
+    remoteJid: '0@s.whatsapp.net',
+    fromMe: false,
+    participant: '0@s.whatsapp.net'
+  },
+  message: {
+    extendedTextMessage: {
+      text: `🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗:🇳🇬||${prefix}𝗤𝗨𝗢𝗧𝗘𝗦_𝗖𝗢𝗠𝗠𝗔𝗡𝗗`
+    }
+  }
+};
+  global.quote = {
+  key: {
+    remoteJid: '0@s.whatsapp.net',
+    fromMe: false,
+    participant: '0@s.whatsapp.net'
+  },
+  message: {
+    extendedTextMessage: {
+      text: `🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗:🇳🇬||${prefix}𝗤𝗨𝗢𝗧𝗘𝗦_𝗖𝗢𝗠𝗠𝗔𝗡𝗗`
+    }
+  }
+};
+  global.quote = {
+  key: {
+    remoteJid: '0@s.whatsapp.net',
+    fromMe: false,
+    participant: '0@s.whatsapp.net'
+  },
+  message: {
+    extendedTextMessage: {
+      text: `🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗:🇳🇬||${prefix}𝗤𝗨𝗢𝗧𝗘𝗦_𝗖𝗢𝗠𝗠𝗔𝗡𝗗`
+    }
+  }
+};
+
+  global.quote = {
+  key: {
+    remoteJid: '0@s.whatsapp.net',
+    fromMe: false,
+    participant: '0@s.whatsapp.net'
+  },
+  message: {
+    extendedTextMessage: {
+      text: `🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗:🇳🇬||${prefix}𝗤𝗨𝗢𝗧𝗘𝗦_𝗖𝗢𝗠𝗠𝗔𝗡𝗗`
+    }
+  }
+};
+
+global.quote = {
+  key: {
+    remoteJid: '0@s.whatsapp.net',
+    fromMe: false,
+    participant: '0@s.whatsapp.net'
+  },
+  message: {
+    extendedTextMessage: {
+      text: `🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗:🇳🇬||${prefix}𝗤𝗨𝗢𝗧𝗘𝗦_𝗖𝗢𝗠𝗠𝗔𝗡𝗗`
+    }
+  }
+};
 
 
 
