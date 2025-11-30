@@ -1,10 +1,6 @@
 //=======°°°°°°°°°°′°°°°=========//
 global.initializeGlobals = function() {
-  
 const prefix = global.prefix; 
-console.log("prefix",global.prefix);
-console.log("prefix",prefix);
-
 /**≠≠==≠====={Aicmd}==========≠=*/
 
 global.Ai= {
@@ -209,7 +205,7 @@ global.balance = {
 };
 
 
-/**=================[TOOL-CMD]=========€$$$$$€=¥=¥=€*/
+/**=======[TOOL-CMD]=========€$$$*/
 
 global.vv= {
   key: {
@@ -315,7 +311,7 @@ global.pdf = {
   }
 };
 
-/**=≠=========={EFFECT CMD}========≠=======*/
+/**=≠===={EFFECT CMD}===========*/
 
 global.textmaker = {
   key: {
@@ -343,9 +339,61 @@ global.fliptext = {
   }
 };
 
+/**===========FUN CMD===========*/
 
+global.anime = {
+  key: {
+    remoteJid: '0@s.whatsapp.net',
+    fromMe: false,
+    participant: '0@s.whatsapp.net'
+  },
+  message: {
+    extendedTextMessage: {
+      text: `🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗:🇳🇬||${prefix}𝗔𝗡𝗜𝗠𝗘_𝗖𝗢𝗠𝗠𝗔𝗡𝗗`
+    }
+  }
+};
 
+  global.insult = {
+  key: {
+    remoteJid: '0@s.whatsapp.net',
+    fromMe: false,
+    participant: '0@s.whatsapp.net'
+  },
+  message: {
+    extendedTextMessage: {
+      text: `🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗:🇳🇬||${prefix}𝗜𝗡𝗦𝗨𝗟𝗧_𝗖𝗢𝗠𝗠𝗔𝗡𝗗`
+    }
+  }
+};
 
+  global.quote = {
+  key: {
+    remoteJid: '0@s.whatsapp.net',
+    fromMe: false,
+    participant: '0@s.whatsapp.net'
+  },
+  message: {
+    extendedTextMessage: {
+      text: `🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗:🇳🇬||${prefix}𝗤𝗨𝗢𝗧𝗘𝗦_𝗖𝗢𝗠𝗠𝗔𝗡𝗗`
+    }
+  }
+};
+
+  global.xxqc= {
+  key: {
+    remoteJid: '0@s.whatsapp.net',
+    fromMe: false,
+    participant: '0@s.whatsapp.net'
+  },
+  message: {
+    extendedTextMessage: {
+      text: `🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗:🇳🇬||${prefix}𝗫𝗫𝗤𝗖_𝗖𝗢𝗠𝗠𝗔𝗡𝗗`
+    }
+  }
+};
+
+//==≠=========[]""""""""""""''===\\
 
 
 
