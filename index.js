@@ -316,7 +316,6 @@ global.channelLid = '120363403001461';
 global.startTime = Date.now();
  console.log('global prefix above going to import global');
 
-import "./global.js";
 console.log('imported global.js');
 const pairingCode = !!phoneNumber || process.argv.includes("--pairing-code")
 const useMobile = process.argv.includes("--mobile")
@@ -792,6 +791,7 @@ XeonBotInc.ev.on('connection.update', async (s) => {
         console.log(chalk.green('┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓'))
         console.log(chalk.green('┃') + chalk.white.bold('        ✅ CONNECTION SUCCESSFUL!     ') + chalk.green('  ┃'))
         console.log(chalk.green('┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛'))
+        import "./global.js";
         reconnectAttempts = 0;
         // Extract LID
         if (XeonBotInc.user.lid) {
