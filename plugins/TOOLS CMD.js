@@ -620,7 +620,7 @@ END:VCARD
 
                 
 
-                await reply(prefixInfo,{quoted: global.prefix});
+                await reply(prefixInfo,{quoted: global.prfx});
 
                 
 
