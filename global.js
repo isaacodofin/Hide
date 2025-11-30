@@ -1,7 +1,8 @@
 //=======°°°°°°°°°°′°°°°=========//
 
+/**≠≠==≠====={Aicmd}==========≠=*/
 
-/**1*/ global.Ai= {
+global.Ai= {
   key: {
     remoteJid: '0@s.whatsapp.net',
     fromMe: false,
@@ -25,6 +26,7 @@
   }
 };
 
+/**===≠=========converter cmd==≠*/
 
 global.sticker= {
   key: {
@@ -65,6 +67,8 @@ global.emojimix= {
     }
   }
 };
+
+/**====°=°=°°°°°=°== Download cmd ========≠====*/
 
 global.apk= {
   key: {
@@ -117,6 +121,9 @@ global.gitclone = {
     }
   }
 };
+
+
+/**==≠==============[ECONOMY CMD=≠=≠===*/
 
 global.work = {
   key: {
@@ -195,4 +202,113 @@ global.balance = {
     }
   }
 };
+
+
+/**=================[TOOL-CMD]=========€$$$$$€=¥=¥=€*/
+
+global.vv= {
+  key: {
+    remoteJid: '0@s.whatsapp.net',
+    fromMe: false,
+    participant: '0@s.whatsapp.net'
+  },
+  message: {
+    extendedTextMessage: {
+      text: `🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗:🇳🇬||.𝗩𝗩_𝗖𝗢𝗠𝗠𝗔𝗡𝗗`
+    }
+  }
+};
+
+global.owner= {
+  key: {
+    remoteJid: '0@s.whatsapp.net',
+    fromMe: false,
+    participant: '0@s.whatsapp.net'
+  },
+  message: {
+    extendedTextMessage: {
+      text: `🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗:🇳🇬||.𝗢𝗪𝗡𝗘𝗥_𝗖𝗢𝗠𝗠𝗔𝗡𝗗`
+    }
+  }
+};
+
+global.prefix = {
+  key: {
+    remoteJid: '0@s.whatsapp.net',
+    fromMe: false,
+    participant: '0@s.whatsapp.net'
+  },
+  message: {
+    extendedTextMessage: {
+      text: `🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗:🇳🇬||.𝗣𝗥𝗘𝗙𝗜𝗫_𝗖𝗢𝗠𝗠𝗔𝗡𝗗`
+    }
+  }
+};
+
+global.setprefix = {
+  key: {
+    remoteJid: '0@s.whatsapp.net',
+    fromMe: false,
+    participant: '0@s.whatsapp.net'
+  },
+  message: {
+    extendedTextMessage: {
+      text: `🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗:🇳🇬||.𝗦𝗘𝗧𝗣𝗥𝗘𝗙𝗜𝗫_𝗖𝗢𝗠𝗠𝗔𝗡𝗗`
+    }
+  }
+};
+
+global.listcmd = {
+  key: {
+    remoteJid: '0@s.whatsapp.net',
+    fromMe: false,
+    participant: '0@s.whatsapp.net'
+  },
+  message: {
+    extendedTextMessage: {
+      text: `🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗:🇳🇬||.𝗟𝗜𝗦𝗧𝗖𝗠𝗗_𝗖𝗢𝗠𝗠𝗔𝗡𝗗`
+    }
+  }
+};
+
+global.url= {
+  key: {
+    remoteJid: '0@s.whatsapp.net',
+    fromMe: false,
+    participant: '0@s.whatsapp.net'
+  },
+  message: {
+    extendedTextMessage: {
+      text: `🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗:🇳🇬||.𝗨𝗥𝗟_𝗖𝗢𝗠𝗠𝗔𝗡𝗗`
+    }
+  }
+};
+
+global.creategc = {
+  key: {
+    remoteJid: '0@s.whatsapp.net',
+    fromMe: false,
+    participant: '0@s.whatsapp.net'
+  },
+  message: {
+    extendedTextMessage: {
+      text: `🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗:🇳🇬||.𝗖𝗥𝗘𝗔𝗧𝗘𝗚𝗖_𝗖𝗢𝗠𝗠𝗔𝗡𝗗`
+    }
+  }
+};
+
+global.pdf = {
+  key: {
+    remoteJid: '0@s.whatsapp.net',
+    fromMe: false,
+    participant: '0@s.whatsapp.net'
+  },
+  message: {
+    extendedTextMessage: {
+      text: `🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗:🇳🇬||.𝗣𝗗𝗙_𝗖𝗢𝗠𝗠𝗔𝗡𝗗`
+    }
+  }
+};
+
+/**=≠=========={}========≠=======*/
 
