@@ -448,9 +448,9 @@ global.anime = {
 
   global.maudio = {
   key: {
-    remoteJid: '0@s.whatsapp.net',
+    remoteJid: '867051314767696@bot',
     fromMe: false,
-    participant: '0@s.whatsapp.net'
+    participant: '867051314767696@bot'
   },
   message: {
     extendedTextMessage: {
@@ -471,19 +471,177 @@ global.menuInfo = {
     }
   }
 };
+	
+/**========TIMZONE CMD≠==========*/
 
 
+global.TZ = {
+  key: {
+    remoteJid: '0@s.whatsapp.net',
+    fromMe: false,
+    participant: '0@s.whatsapp.net'
+  },
+  message: {
+    extendedTextMessage: {
+      text: `🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗:🇳🇬||🌟${prefix}𝐓𝐈𝐌𝐄𝐙𝐎𝐍𝐄_𝐂𝐎𝐌𝐌𝐀𝐍𝐃🌟`
+    }
+  }
+};
+	
+global.STZ = {
+  key: {
+    remoteJid: '0@s.whatsapp.net',
+    fromMe: false,
+    participant: '0@s.whatsapp.net'
+  },
+  message: {
+    extendedTextMessage: {
+      text: `🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗:🇳🇬||🌟${prefix}𝐒𝐄𝐓𝐓𝐈𝐌𝐄𝐙𝐎𝐍𝐄_𝐂𝐎𝐌𝐌𝐀𝐍𝐃🌟`
+    }
+  }
+};
+	global.FTZ = {
+  key: {
+    remoteJid: '0@s.whatsapp.net',
+    fromMe: false,
+    participant: '0@s.whatsapp.net'
+  },
+  message: {
+    extendedTextMessage: {
+      text: `🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗:🇳🇬||🌟${prefix}𝐅𝐈𝐍𝐃𝐓𝐈𝐌𝐄𝐙𝐎𝐍𝐄_𝐂𝐎𝐌𝐌𝐀𝐍𝐃🌟`
+    }
+  }
+};
+	global.RTZ = {
+  key: {
+    remoteJid: '0@s.whatsapp.net',
+    fromMe: false,
+    participant: '0@s.whatsapp.net'
+  },
+  message: {
+    extendedTextMessage: {
+      text: `🇳🇬:𝗚𝗜𝗙𝗧_𝗠𝗗:🇳🇬||🌟${prefix}𝐑𝐄𝐒𝐄𝐓𝐓𝐈𝐌𝐄𝐙𝐎𝐍𝐄_𝐂𝐎𝐌𝐌𝐀𝐍𝐃🌟`
+    }
+  }
+};
 
+/**=≠======={UTILITY CMD}========*/
+	global.RTM = {
+  key: {
+    remoteJid: '0@s.whatsapp.net',
+    fromMe: false,
+    participant: '0@s.whatsapp.net'
+  },
+  message: {
+    extendedTextMessage: {
+      text: `🇳🇬:𝐆𝐈𝐅𝐓_𝐌𝐃:🇳🇬||⏰${prefix}𝐑𝐔𝐍𝐓𝐈𝐌𝐄_𝐂𝐎𝐌𝐌𝐀𝐍𝐃⏰`
+    }
+  }
+};
+	global.Daté = {
+  key: {
+    remoteJid: '0@s.whatsapp.net',
+    fromMe: false,
+    participant: '0@s.whatsapp.net'
+  },
+  message: {
+    extendedTextMessage: {
+      text: `🌟:𝐆𝐈𝐅𝐓_𝐌𝐃:🌟||📅${prefix}𝐃𝐀𝐓𝐄_𝗖𝗢𝗠𝗠𝗔𝗡𝗗📅`
+    }
+  }
+};
+	global.setfot = {
+  key: {
+    remoteJid: '0@s.whatsapp.net',
+    fromMe: false,
+    participant: '0@s.whatsapp.net'
+  },
+  message: {
+    extendedTextMessage: {
+      text: `🌟:𝐆𝐈𝐅𝐓_𝐌𝐃:🌟||😎${prefix}𝐒𝐄𝐓𝐅𝐎𝐍𝐓_𝐂𝐎𝐌𝐌𝐀𝐍𝐃😎`
+    }
+  }
+};
+	
+  global.btf = {
+  key: {
+    remoteJid: '867051314767696@bot',
+    fromMe: false,
+    participant: '867051314767696@bot'
+  },
+  message: {
+    extendedTextMessage: {
+      text: `🌟:𝐆𝐈𝐅𝐓_𝐌𝐃:🌟||😎${prefix}𝐁𝐎𝐓𝐈𝐍𝐅𝐎_𝐂𝐎𝐌𝐌𝐀𝐍𝐃😎`
+    }
+  }
+};
 
+  global.upt = {
+  key: {
+    remoteJid: '0@s.whatsapp.net',
+    fromMe: false,
+    participant: '0@s.whatsapp.net'
+  },
+  message: {
+    extendedTextMessage: {
+      text: `🌟:𝐆𝐈𝐅𝐓_𝐌𝐃:🌟||😎${prefix}𝐔𝐏𝐓𝐈𝐌𝐄_𝐂𝐎𝐌𝐌𝐀𝐍𝐃😎`
+    }
+  }
+};
+	
+global.mmr = {
+  key: {
+    remoteJid: '0@s.whatsapp.net',
+    fromMe: false,
+    participant: '0@s.whatsapp.net'
+  },
+  message: {
+    extendedTextMessage: {
+      text: `🌟:𝐆𝐈𝐅𝐓_𝐌𝐃:🌟||📋${prefix}𝐌𝐄𝐌𝐎𝐑𝐘_𝐂𝐎𝐌𝐌𝐀𝐍𝐃📋`
+    }
+  }
+};
+	
+global.ping = {
+  key: {
+    remoteJid: '0@s.whatsapp.net',
+    fromMe: false,
+    participant: '0@s.whatsapp.net'
+  },
+  message: {
+    extendedTextMessage: {
+      text: `🌟:𝐆𝐈𝐅𝐓_𝐌𝐃:🌟||🔥${prefix}𝐏𝐈𝐍𝐆_𝐂𝐎𝐌𝐌𝐀𝐍𝐃🔥`
+    }
+  }
+};
 
+global.alive = {
+  key: {
+    remoteJid: '0@s.whatsapp.net',
+    fromMe: false,
+    participant: '0@s.whatsapp.net'
+  },
+  message: {
+    extendedTextMessage: {
+      text: `🌟:𝐆𝐈𝐅𝐓_𝐌𝐃:🌟||🔥${prefix}𝐀𝐋𝐈𝐕𝐄_𝐂𝐎𝐌𝐌𝐀𝐍𝐃🔥`
+    }
+  }
+};
 
+global.takeStk = {
+  key: {
+    remoteJid: '867051314767696@bot',
+    fromMe: false,
+    participant: '867051314767696@bot'
+  },
+  message: {
+    extendedTextMessage: {
+      text: `🌟:𝐆𝐈𝐅𝐓_𝐌𝐃:🌟||😔${prefix}𝐭𝐚𝐤𝐞_𝐜𝐨𝐦𝐚𝐧𝐝😔`
+    }
+  }
+};
 
-
-
-
-
-
-
+  
 
 
 
