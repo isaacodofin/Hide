@@ -7,7 +7,6 @@ import settings from './settings.js';
 import { getSetting } from './lib/database.js';
 import { channelInfo } from './lib/messageConfig.js';
 import { Boom } from '@hapi/boom';
-const currentPrefix = (global.prefix === undefined || global.prefix === null) ? '.' : global.prefix;
 import FileType from 'file-type';
 import axios from 'axios';
 import { handleMessages, handleGroupParticipantUpdate, handleStatus, restorePresenceSettings, initializeCallHandler} from './main.js';
@@ -314,7 +313,6 @@ global.getCurrentTime = getCurrentTime;
 global.getCurrentTimezone = getCurrentTimezone;
 global.channelLid = '120363403001461';
 global.startTime = Date.now();
-
 
 const pairingCode = !!phoneNumber || process.argv.includes("--pairing-code")
 const useMobile = process.argv.includes("--mobile")
@@ -832,7 +830,7 @@ const fake= createFakeContact({
         const time = global.getCurrentTime('time2')
         try {
             await XeonBotInc.sendMessage(botNumber, {
-                text: `╔═▣══════════▣╗\n║       ▣ GIFT - MD ▣     ║\n╚═▣══════════▣╝\n▣ Time: ${time}\n▣ Platform: ${global.server}\n▣ Status: active and steady!\n▣ Current prefix is: [ ${currentPrefix} ]\n▣ ✅Do ur best to join below channel`, }, { quoted: fake});
+                text: `╔═▣══════════▣╗\n║       ▣ GIFT - MD ▣     ║\n╚═▣══════════▣╝\n▣ Time: ${time}\n▣ Platform: ${global.server}\n▣ Status: active and steady!\n▣ Current prefix is: [ ${global.prefix} ]\n▣ ✅Do ur best to join below channel`, }, { quoted: fake});
             console.log(chalk.green('[GIFT-MD] ✅ Startup message sent to User!'));
         } catch (error) {
             console.error(chalk.yellow('[GIFT-MD] ⚠️ Could not send startup message:'), error.message);
