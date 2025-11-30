@@ -78,7 +78,7 @@ export default [
 
             const userData = getUserBalance(context.userId);
 
-            await context.reply(`💰 Your Balance: $${userData.balance.toLocaleString()}`);
+            await context.reply(`💰 Your Balance: $${userData.balance.toLocaleString()}`,{quoted:global.balance});
 
         }
 
@@ -108,7 +108,7 @@ export default [
 
                 const minutes = Math.floor((timeLeft % (60 * 60 * 1000)) / (60 * 1000));
 
-                return context.reply(`⏰ You already claimed your daily reward!\nCome back in ${hours}h ${minutes}m`);
+                return context.reply(`⏰ You already claimed your daily reward!\nCome back in ${hours}h ${minutes}m`,{quoted:global.daily});
 
             }
 
@@ -118,7 +118,7 @@ export default [
 
             updateUserBalance(context.userId, userData.balance + reward, now);
 
-            await context.reply(`🎁 Daily reward claimed!\nYou received: $${reward}\nNew balance: $${(userData.balance + reward).toLocaleString()}`);
+            await context.reply(`🎁 Daily reward claimed!\nYou received: $${reward}\nNew balance: $${(userData.balance + reward).toLocaleString()}`,{quoted:global.daily});
 
         }
 
@@ -146,7 +146,7 @@ export default [
 
                 const minutes = Math.floor(timeLeft / (60 * 1000));
 
-                return context.reply(`⏰ You're tired from working!\nRest for ${minutes} more minutes`);
+                return context.reply(`⏰ You're tired from working!\nRest for ${minutes} more minutes`,{quoted:global.work});
 
             }
 
@@ -168,7 +168,7 @@ export default [
 
             updateUserBalance(context.userId, userData.balance + salary, userData.lastDaily, now);
 
-            await context.reply(`💼 You worked as a ${job}\nEarned: $${salary}\nNew balance: $${(userData.balance + salary).toLocaleString()}`);
+            await context.reply(`💼 You worked as a ${job}\nEarned: $${salary}\nNew balance: $${(userData.balance + salary).toLocaleString()}`,{quoted:global.work});
 
         }
 
@@ -192,7 +192,7 @@ export default [
 
             if (!amount || amount <= 0) {
 
-                return context.reply('Please specify a valid amount to transfer!');
+                return context.reply('Please specify a valid amount to transfer!',{quoted:global.transfer});
 
             }
 
@@ -200,7 +200,7 @@ export default [
 
             if (!mention) {
 
-                return context.reply('Please mention someone to transfer money to!');
+                return context.reply('Please mention someone to transfer money to!',{quoted:global.transfer});
 
             }
 
@@ -208,7 +208,7 @@ export default [
 
             if (mention === context.userId) {
 
-                return context.reply('You cannot transfer money to yourself!');
+                return context.reply('You cannot transfer money to yourself!',{quoted:global.transfer});
 
             }
 
@@ -218,7 +218,7 @@ export default [
 
             if (senderData.balance < amount) {
 
-                return context.reply(`Insufficient funds! You have $${senderData.balance.toLocaleString()}`);
+                return context.reply(`Insufficient funds! You have $${senderData.balance.toLocaleString()}`,{quoted:global.transfer});
 
             }
 
@@ -234,7 +234,7 @@ export default [
 
             
 
-            await context.reply(`💸 Transfer successful!\nSent $${amount.toLocaleString()} to @${mention.split('@')[0]}\nYour new balance: $${(senderData.balance - amount).toLocaleString()}`);
+            await context.reply(`💸 Transfer successful!\nSent $${amount.toLocaleString()} to @${mention.split('@')[0]}\nYour new balance: $${(senderData.balance - amount).toLocaleString()}`,{quoted: global.transfer});
 
         }
 
@@ -256,7 +256,7 @@ export default [
 
             if (!amount || amount <= 0) {
 
-                return context.reply('Please specify a valid amount to gamble!');
+                return context.reply('Please specify a valid amount to gamble!',{quoted:global.gamble});
 
             }
 
@@ -284,13 +284,13 @@ export default [
 
                 updateUserBalance(context.userId, userData.balance + winAmount);
 
-                await context.reply(`🎰 You won!\nGambled: $${amount.toLocaleString()}\nWon: $${winAmount.toLocaleString()}\nNew balance: $${(userData.balance + winAmount).toLocaleString()}`);
+                await context.reply(`🎰 You won!\nGambled: $${amount.toLocaleString()}\nWon: $${winAmount.toLocaleString()}\nNew balance: $${(userData.balance + winAmount).toLocaleString()}`,{quoted:global.gamble});
 
             } else {
 
                 updateUserBalance(context.userId, userData.balance - amount);
 
-                await context.reply(`💸 You lost!\nGambled: $${amount.toLocaleString()}\nNew balance: $${(userData.balance - amount).toLocaleString()}`);
+                await context.reply(`💸 You lost!\nGambled: $${amount.toLocaleString()}\nNew balance: $${(userData.balance - amount).toLocaleString()}`,{ quoted: global.gamble});
 
             }
 
@@ -316,8 +316,6 @@ export default [
 
                 .slice(0, 10);
 
-            
-
             if (users.length === 0) {
 
                 return context.reply('No economy data available!');
@@ -340,7 +338,7 @@ export default [
 
             
 
-            await context.reply(leaderboard);
+            await context.reply(leaderboard,{quoted: global.learderboard});
 
         }
 
