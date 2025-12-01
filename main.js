@@ -83,18 +83,18 @@ let chatId = getChatId(message);
 let senderId = getSenderId(message, sock);
 
 // Fallback to basic Baileys if smart detection fails
-if (!chatId) {
+/**if (!chatId) {
     chatId = message.key.remoteJid;
 }
 if (!senderId) {
     senderId = message.key.participant || message.key.remoteJid;
-}
+}*/
         
-        /** Validation
+    
         if (!chatId) {
             console.log('⚠️ Could not detect valid chatId');
             return;
-        }*/
+        }
         const pushname = message.pushName || "Unknown User";
         const isGroup = chatId.endsWith('@g.us');
         const isChannel = chatId.endsWith('@newsletter');
