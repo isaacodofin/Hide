@@ -93,7 +93,7 @@ if (!senderId) {
     
         if (!chatId) {
             console.log('⚠️ Could not detect valid chatId');
-            return;
+            continue;
         }
         const pushname = message.pushName || "Unknown User";
         const isGroup = chatId.endsWith('@g.us');
