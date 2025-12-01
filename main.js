@@ -89,13 +89,6 @@ if (!chatId) {
 if (!senderId) {
     senderId = message.key.participant || message.key.remoteJid;
 }
-
-// Now filter out broadcast/system messages
-if (!chatId || 
-    chatId === 'status@broadcast' || 
-    chatId.endsWith('@broadcast')) {
-    return; // Skip broadcast messages silently
-}
         
         /** Validation
         if (!chatId) {
@@ -145,7 +138,7 @@ if (!chatId ||
             if (!isChannel) {  
                 await handleAutoReaction(sock, message);  
             }  
-        } catch (reactionError) {  
+        } catch (reactionErrbor) {  
               
         }  
           
