@@ -21,7 +21,7 @@ import db from './lib/database.js';
 import {rainbow, pastel} from './lib/color.js';
 console.log(chalk.yellow('[GIFT-MD] initializing executor 🚀'));
 loadCommands();
-//.......................................................................................................................................................//
+//....................................................................................................................................//
 // === GLOBALS ===//
 // goto index global//
 
@@ -58,43 +58,29 @@ const restorePresenceSettings = async (sock) => {
 };
 //console.clear();
 // ===== HANDLE MESSAGES ======//
-  
-
+ 
 async function handleMessages(sock, messageUpdate, printLog) {
     try {
         const { messages, type } = messageUpdate;
         if (type !== 'notify') return;
-
         const message = messages[0];  
         if (!message?.message) return;
-        
-        console.log("---- Incoming Message Object ----");
+        /**console.log("---- Incoming Message Object ----");
         console.log(JSON.stringify(message, (key, value) =>
+
             typeof value === "bigint" ? value.toString() : value
-        , 2));
+        , 2));*/
+        
         
         const currentPrefix = global.prefix;
         
-        /** ✅ SMART AUTO-DETECTION - Always gets @s.whatsapp.net
-        const chatId = getChatId(message);
-        const senderId = getSenderId(message, sock);*/
-        // ✅ SMART AUTO-DETECTION with FALLBACK
-let chatId = getChatId(message);
-let senderId = getSenderId(message, sock);
-
-// Fallback to basic Baileys if smart detection fails
-/**if (!chatId) {
-    chatId = message.key.remoteJid;
+        const chatId = getChatId(message) || message.key?.remoteJid;
+const senderId = getSenderId(message,sock) || message.key?.participant || message.key?.remoteJid;
+if (!chatId) {
+    console.log('⚠️ No chatId, skipping if it persist contact dev');
+    return;
 }
-if (!senderId) {
-    senderId = message.key.participant || message.key.remoteJid;
-}*/
         
-    
-        if (!chatId) {
-            console.log('⚠️ Could not detect valid chatId');
-           /** continue;*/
-        }
         const pushname = message.pushName || "Unknown User";
         const isGroup = chatId.endsWith('@g.us');
         const isChannel = chatId.endsWith('@newsletter');
@@ -127,9 +113,8 @@ if (!senderId) {
       ` 📥 From: [${pushname}]\n`+
       ` 🆔 Chatid: ${chatId}\n` +
       ` 👤 Sender: ${senderId}\n` +
-      ` 💌 Text: ${rawText || "[bot]"}               \n`+
+      ` 💌 Text: ${rawText ||userMessage||"[bot]"}               \n`+
  `┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛`)));
-
 
        // Only log command usage  
     if (userMessage.startsWith(currentPrefix)) {  
@@ -138,7 +123,7 @@ if (!senderId) {
             if (!isChannel) {  
                 await handleAutoReaction(sock, message);  
             }  
-        } catch (reactionErrbor) {  
+        } catch (reactionError) {  
               
         }  
           
