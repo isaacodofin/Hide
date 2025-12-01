@@ -813,46 +813,29 @@ await context.react('🥳')
                 await context.reply("❌ Error fetching system info.");
             }
         }
-    }, 
-   {
-    name: "ping",
-    aliases: ["p"],
-    description: "Check bot speed",
-    category: "UTILITY MENU",
-    execute: async (sock, message, args, context) => {
-        const { reply } = context;
-        const start = Date.now();
-        
-        // Send initial message
-        const sentMsg = await reply("🏓 Calculating Latency...⌛", { 
-            quoted: global.ping 
+    },{
+        name: "ping",
+        aliases: ["p"],
+        description: "Check bot speed",
+        category: "UTILITY MENU",
+        execute: async (sock, message, args, { chatId }) => {
+            const start = Date.now();
+            
+            const calculatingText = applyFontStyle("©𝐂𝐚𝐥𝐜𝐮𝐥𝐚𝐭𝐢𝐧𝐠 𝐋𝐚𝐭𝐞𝐧𝐜𝐲...⌛");
+            const sentMsg = await sock.sendMessage(chatId, { text: calculatingText }, { quoted: global.ping});
+
+            await new Promise(r => setTimeout(r, 2000));
+
+            const end = Date.now();
+            const speed = end - start;
+
+            const speedText = applyFontStyle(`©𝐆𝐢𝐟𝐭_𝐗 𝐒𝐩𝐞𝐞𝐝: ${speed}𝐦𝐬ツ`);
+            await sock.sendMessage(chatId, { 
+                text: speedText, 
+                edit: sentMsg.key
         });
-
-        await new Promise(r => setTimeout(r, 1000));
-
-        const end = Date.now();
-        const speed = end - start;
-        
-        // Enhanced speed display
-        const speedEmoji = speed < 100 ? '🟢' : speed < 300 ? '🟡' : '🔴';
-        const speedStatus = speed < 100 ? 'Excellent' : speed < 300 ? 'Good' : 'Slow';
-        
-        const speedText = `🏓 Pong!
-
-${speedEmoji} Speed: ${speed}ms
-📊 Status: ${speedStatus}
-⚡ Latency: ${speed < 100 ? 'Fast' : 'Normal'}
-
-${'─'.repeat(20)}
-_Bot is running smoothly!_`;
-
-        // Edit message with detailed speed info
-        await reply(speedText, { 
-            edit: sentMsg.key, 
-            quoted: global.ping 
-        });  
-    }
-},
+        }
+    },
     {
     name: "alive",
     aliases: ["alv"],
