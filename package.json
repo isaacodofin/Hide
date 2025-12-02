@@ -31,7 +31,7 @@
     "@adiwajshing/keyed-db": "^0.2.4",
     "@ffmpeg/ffmpeg": "^0.12.15",
     "@hapi/boom": "^10.0.1",
-    "@whiskeysockets/baileys": "7.0.0-rc.8",
+    "@whiskeysockets/baileys": "7.0.0-rc.6",
     "better-sqlite3": "^12.2.0",
     "awesome-phonenumber": "^5.9.0",
     "axios": "^1.8.4",
