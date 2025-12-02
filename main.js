@@ -91,18 +91,28 @@ if (!chatId) {
         // Rest of your code...
        
     const userMessage = (  
-        message.message?.conversation?.trim() ||  
-        message.message?.extendedTextMessage?.text?.trim() ||  
-        message.message?.imageMessage?.caption?.trim() ||  
-        message.message?.videoMessage?.caption?.trim() ||  
-        ''  
-    ).toLowerCase().replace(/\.\s+/g, '.').trim();  
+    message.message?.conversation?.trim() ||  
+    message.message?.extendedTextMessage?.text?.trim() ||  
+    message.message?.imageMessage?.caption?.trim() ||  
+    message.message?.videoMessage?.caption?.trim() ||
+    message.message?.documentMessage?.caption?.trim() ||
+    message.message?.buttonsResponseMessage?.selectedButtonId ||
+    message.message?.listResponseMessage?.singleSelectReply?.selectedRowId ||
+    ''  
+).toLowerCase().replace(/\.\s+/g, '.').trim();  
 
-    const rawText = message.message?.conversation?.trim() ||  
-        message.message?.extendedTextMessage?.text?.trim() ||  
-        message.message?.imageMessage?.caption?.trim() ||  
-        message.message?.videoMessage?.caption?.trim() ||  
-        '';  
+const rawText = 
+    message.message?.conversation?.trim() ||  
+    message.message?.extendedTextMessage?.text?.trim() ||  
+    message.message?.imageMessage?.caption?.trim() ||  
+    message.message?.videoMessage?.caption?.trim() ||
+    message.message?.documentMessage?.caption?.trim() ||
+    message.message?.buttonsResponseMessage?.selectedButtonId ||
+    message.message?.listResponseMessage?.singleSelectReply?.selectedRowId ||
+    '';
+        if (!rawText && !userMessage) {
+    return; // Silently skip - no text to process
+        }
        // === LOG ALL MESSAGES ===
   console.log('\x1b[30m--------------------\x1b[0m');
   console.log(
