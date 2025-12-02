@@ -123,7 +123,7 @@ const rawText =
       ` 📥 From: [${pushname}]\n`+
       ` 🆔 Chatid: ${chatId}\n` +
       ` 👤 Sender: ${senderId}\n` +
-      ` 💌 Text: ${rawText ||userMessage||"[bot]"}               \n`+
+      ` 💌 Text: ${rawText||"[bot]"}               \n`+
  `┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛`)));
 
        // Only log command usage  
