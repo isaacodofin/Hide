@@ -687,7 +687,7 @@ execute: async (sock, message, args, context) => {
                 return await context.replyPlain("❌ Failed to fetch song data from API.");
             }
 
-            const song = data.result.data;
+            const song = data.result;
 
             if (!song.downloadUrl) {
                 return await context.replyPlain("❌ No download URL found in API response.");
