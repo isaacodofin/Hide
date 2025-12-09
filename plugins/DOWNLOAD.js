@@ -683,7 +683,7 @@ execute: async (sock, message, args, context) => {
             const data = response.data;
 
             // ✅ Updated JSON structure check
-            if (!data.status || !data.result || !data.result.data) {
+            if (!data.status || !data.result){
                 return await context.replyPlain("❌ Failed to fetch song data from API.");
             }
 
