@@ -42,8 +42,8 @@ import os from 'os';
 import dotenv from "dotenv";
 dotenv.config();
 console.log(chalk.cyan.bold('\n\n[Gift-X] conecting to [Gift-md] zip space....'));
-console.log(chalk.cyan('transfering..\n [Gift-X].......>[GIFT-MD]..'));
-console.log(chalk.cyan('\n[GIFT-MD] ✅ Connected'));
+console.log(chalk.cyan('transfering..\n.         [Gift-X].......>[GIFT-MD]..'));
+console.log(chalk.cyan('\n[GIFT-MD] ✅ Connected\n'));
 const envPath = path.resolve(process.cwd(), '.env');
 
     function loadEnvSession() {
