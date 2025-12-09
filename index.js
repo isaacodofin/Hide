@@ -41,7 +41,9 @@ import store from './lib/lightweight.js';
 import os from 'os';
 import dotenv from "dotenv";
 dotenv.config();
-
+console.log(chalk.cyan.bold('[Gift-X] conecting to [Gift-md] zip space....'));
+console.log(chalk.cyan('transfering|| [Gift-X].......>[GIFT-MD]..'));
+console.log(chalk.cyan('[GIFT-MD] ✅ Connected'));
 const envPath = path.resolve(process.cwd(), '.env');
 
     function loadEnvSession() {
