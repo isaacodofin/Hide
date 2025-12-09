@@ -1,4 +1,4 @@
-//import { autoSaveUsers } from './plugins/Aaqq.js';
+import { convertToVoiceNote } from './lib/voiceConverter.js';
 import { getChatId, getSenderId } from './lib/myfunc.js';
 import chalk from 'chalk';
 import chatbotMemory from './lib/chatbot.js'
@@ -157,9 +157,8 @@ const rawText =
         return;  
     }  
 
-      
 
-     // Handle play command replies  
+// Handle play command replies  
 if (global.playQueue && global.playQueue[chatId]) {  
     const queueData = global.playQueue[chatId];
     
@@ -192,15 +191,27 @@ if (global.playQueue && global.playQueue[chatId]) {
         }
         
         if (emoji === '🎤' || emoji === '🔊') {
-            await sock.sendMessage(chatId, {
-                audio: { url: queueData.audioUrl },
-                mimetype: "audio/ogg; codecs=opus",
-                ptt: true,
-                fileName: `${queueData.title}.opus`
-            }, { quoted: message });
-            
-            global.playQueue[chatId].voiceNoteSent = true;
-            if (global.playQueue[chatId].audioSent && global.playQueue[chatId].documentSent) delete global.playQueue[chatId];
+            try {
+                await sock.sendMessage(chatId, {
+                    text: '🎤 Converting to voice note... Please wait (5-15 seconds)'
+                }, { quoted: message });
+                
+                const voiceBuffer = await convertToVoiceNote(queueData.audioUrl, queueData.title);
+                
+                await sock.sendMessage(chatId, {
+                    audio: voiceBuffer,
+                    mimetype: 'audio/ogg; codecs=opus',
+                    ptt: true
+                }, { quoted: message });
+                
+                global.playQueue[chatId].voiceNoteSent = true;
+                if (global.playQueue[chatId].audioSent && global.playQueue[chatId].documentSent) delete global.playQueue[chatId];
+            } catch (error) {
+                console.error('[VOICE] Error:', error);
+                await sock.sendMessage(chatId, {
+                    text: '❌ Voice note conversion failed. Try Audio (A) instead.'
+                }, { quoted: message });
+            }
             return;
         }
     }
@@ -233,21 +244,32 @@ if (global.playQueue && global.playQueue[chatId]) {
     }
     
     if (userReply === 'v' || userReply === 'voice' || userReply === 'vn') {
-        await sock.sendMessage(chatId, {
-            audio: { url: queueData.audioUrl },
-            mimetype: "audio/ogg; codecs=opus",
-            ptt: true,
-            fileName: `${queueData.title}.opus`
-        }, { quoted: message });
-        
-        global.playQueue[chatId].voiceNoteSent = true;
-        if (global.playQueue[chatId].audioSent && global.playQueue[chatId].documentSent) delete global.playQueue[chatId];
+        try {
+            await sock.sendMessage(chatId, {
+                text: '🎤 Converting to voice note... Please wait (5-15 seconds)'
+            }, { quoted: message });
+            
+            const voiceBuffer = await convertToVoiceNote(queueData.audioUrl, queueData.title);
+            
+            await sock.sendMessage(chatId, {
+                audio: voiceBuffer,
+                mimetype: 'audio/ogg; codecs=opus',
+                ptt: true
+            }, { quoted: message });
+            
+            global.playQueue[chatId].voiceNoteSent = true;
+            if (global.playQueue[chatId].audioSent && global.playQueue[chatId].documentSent) delete global.playQueue[chatId];
+        } catch (error) {
+            console.error('[VOICE] Error:', error);
+            await sock.sendMessage(chatId, {
+                text: '❌ Voice note conversion failed. Try Audio (A) instead.'
+            }, { quoted: message });
+        }
         return;
     }
 }
 
-        
-            // Non-command messages  
+        // Non-command messages  
     if (!userMessage.startsWith(currentPrefix)) {  
         // ✅ FIXED: Reduced auto-reactions for channels  
         try {  
