@@ -722,6 +722,7 @@ execute: async (sock, message, args, context) => {
 
 Reply with:
 🅰️ - For Audio Format 🎵
+🅱️ - For Voice-Note Format 😎
 🇩 - For Document Format 📄`
             }, { quoted: msg });
 
