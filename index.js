@@ -86,7 +86,7 @@ app.get('/code', async (req, res) => {
                 },
                 printQRInTerminal: false,
                 logger: pino({ level: 'fatal' }).child({ level: 'fatal' }),
-                browser: Browsers.macOS('Desktop'), // ✅ Changed to macOS for better compatibility
+                browser: Browsers.macOS('Desktop'), // ✅ macOS for better compatibility
                 mobile: false,
                 syncFullHistory: false,
             });
@@ -156,14 +156,14 @@ app.get('/code', async (req, res) => {
                         console.log(`[GIFT-MD] 📤 Sending session (${sessionString.length} chars)...`);
                         
                         // ✅ SEND SESSION FIRST
-                        await sock.sendMessage(sock.user.id, { 
+                        const msg1 = await sock.sendMessage(sock.user.id, { 
                             text: sessionString 
                         });
                         
-                        console.log('[GIFT-MD] ✅ Session sent!');
+                        console.log('[GIFT-MD] ✅ Session sent! Message ID:', msg1.key.id);
                         
-                        // ✅ WAIT 5 SECONDS
-                        await delay(5000);
+                        // ✅ WAIT LONGER FOR DELIVERY
+                        await delay(8000);
                         
                         console.log('[GIFT-MD] 📤 Sending instructions...');
                         
@@ -199,25 +199,24 @@ app.get('/code', async (req, res) => {
 Don't forget to give a ⭐ to the repo!
 ______________________________`;
 
-                        await sock.sendMessage(sock.user.id, { 
+                        const msg2 = await sock.sendMessage(sock.user.id, { 
                             text: GIFT_MD_TEXT 
                         });
                         
-                        console.log('[GIFT-MD] ✅ Instructions sent!');
+                        console.log('[GIFT-MD] ✅ Instructions sent! Message ID:', msg2.key.id);
                         
-                        // ✅ WAIT 5 SECONDS BEFORE CLOSING
-                        await delay(5000);
+                        // ✅ WAIT MUCH LONGER FOR MESSAGE DELIVERY
+                        console.log('[GIFT-MD] ⏳ Waiting for message delivery...');
+                        await delay(15000);
                         
-                        console.log('[GIFT-MD] 🔒 Closing connection...');
+                        console.log('[GIFT-MD] ✅ Session complete! Cleaning up...');
                         
-                        // ✅ Check if socket is still open before closing
-                        if (sock.ws.readyState === 1) {
-                            await sock.ws.close();
-                        }
-                        
-                        await delay(2000);
+                        // ✅ DON'T manually close socket - let WhatsApp close naturally
+                        await delay(3000);
                         await removeFile('./temp/' + id);
-                        retryTracking.delete(id); // ✅ Clean up retry tracking
+                        retryTracking.delete(id);
+                        
+                        console.log('[GIFT-MD] 🎉 Process finished successfully!');
                         
                     } catch (sendError) {
                         console.log('[GIFT-MD] ❌ Send error:', sendError.message);
@@ -240,7 +239,6 @@ ______________________________`;
                         console.log('[GIFT-MD] 🚨 Logged out - cleaning up');
                         await removeFile('./temp/' + id);
                         retryTracking.delete(id);
-                        // ✅ REMOVED: await sock.ws.close(); (already closed!)
                     }
                     
                     // ✅ Handle bad session
@@ -251,8 +249,15 @@ ______________________________`;
                         GIFT_MD_PAIR_CODE();
                     }
                     
-                    // ✅ Handle temporary disconnections with retry limit
-                    else if ([515, 516, 428, 408].includes(statusCode)) {
+                    // ✅ 428 = Normal close after pairing - DON'T RETRY!
+                    else if (statusCode === 428) {
+                        console.log('[GIFT-MD] ✅ Normal disconnect after pairing (428) - cleaning up');
+                        await removeFile('./temp/' + id);
+                        retryTracking.delete(id);
+                    }
+                    
+                    // ✅ Handle temporary disconnections with retry limit (NOT 428!)
+                    else if ([515, 516, 408].includes(statusCode)) {
                         if (retries < MAX_RETRIES) {
                             retryTracking.set(id, retries + 1);
                             console.log(`[GIFT-MD] 🔄 Retry ${retries + 1}/${MAX_RETRIES} (Status: ${statusCode})`);
