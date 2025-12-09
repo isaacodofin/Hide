@@ -157,37 +157,96 @@ const rawText =
         return;  
     }  
 
-    // Handle play command replies  
-    if (global.playQueue && global.playQueue[chatId]) {  
-        const userReply = userMessage.trim().toLowerCase();  
-        const queueData = global.playQueue[chatId];  
-          
-        if (userReply === 'a' || userReply === 'audio') {  
-            await sock.sendMessage(chatId, {  
-                audio: { url: queueData.audioUrl },  
-                mimetype: "audio/mpeg",  
-                fileName: `${queueData.title}.mp3`  
-            }, { quoted: message });  
+      
 
-            global.playQueue[chatId].audioSent = true;  
-            if (global.playQueue[chatId].documentSent) delete global.playQueue[chatId];  
-            return;  
-        }  
-          
-        if (userReply === 'd' || userReply === 'doc' || userReply === 'document') {  
-            await sock.sendMessage(chatId, {  
-                document: { url: queueData.audioUrl },  
-                mimetype: "audio/mpeg",  
-                fileName: `${queueData.title}.mp3`  
-            }, { quoted: message });  
+     // Handle play command replies  
+if (global.playQueue && global.playQueue[chatId]) {  
+    const queueData = global.playQueue[chatId];
+    
+    // ✅ Check for reactions
+    if (message.message?.reactionMessage) {
+        const emoji = message.message.reactionMessage.text;
+        
+        if (emoji === '🎵' || emoji === '🎶') {
+            await sock.sendMessage(chatId, {
+                audio: { url: queueData.audioUrl },
+                mimetype: "audio/mpeg",
+                fileName: `${queueData.title}.mp3`
+            }, { quoted: message });
+            
+            global.playQueue[chatId].audioSent = true;
+            if (global.playQueue[chatId].documentSent && global.playQueue[chatId].voiceNoteSent) delete global.playQueue[chatId];
+            return;
+        }
+        
+        if (emoji === '📄' || emoji === '📁') {
+            await sock.sendMessage(chatId, {
+                document: { url: queueData.audioUrl },
+                mimetype: "audio/mpeg",
+                fileName: `${queueData.title}.mp3`
+            }, { quoted: message });
+            
+            global.playQueue[chatId].documentSent = true;
+            if (global.playQueue[chatId].audioSent && global.playQueue[chatId].voiceNoteSent) delete global.playQueue[chatId];
+            return;
+        }
+        
+        if (emoji === '🎤' || emoji === '🔊') {
+            await sock.sendMessage(chatId, {
+                audio: { url: queueData.audioUrl },
+                mimetype: "audio/ogg; codecs=opus",
+                ptt: true,
+                fileName: `${queueData.title}.opus`
+            }, { quoted: message });
+            
+            global.playQueue[chatId].voiceNoteSent = true;
+            if (global.playQueue[chatId].audioSent && global.playQueue[chatId].documentSent) delete global.playQueue[chatId];
+            return;
+        }
+    }
+    
+    // ✅ Text replies
+    const userReply = userMessage.trim().toLowerCase();
+    
+    if (userReply === 'a' || userReply === 'audio') {  
+        await sock.sendMessage(chatId, {  
+            audio: { url: queueData.audioUrl },  
+            mimetype: "audio/mpeg",  
+            fileName: `${queueData.title}.mp3`  
+        }, { quoted: message });  
 
-            global.playQueue[chatId].documentSent = true;  
-            if (global.playQueue[chatId].audioSent) delete global.playQueue[chatId];  
-            return;  
-        }  
+        global.playQueue[chatId].audioSent = true;  
+        if (global.playQueue[chatId].documentSent && global.playQueue[chatId].voiceNoteSent) delete global.playQueue[chatId];  
+        return;  
     }  
+      
+    if (userReply === 'd' || userReply === 'doc' || userReply === 'document') {  
+        await sock.sendMessage(chatId, {  
+            document: { url: queueData.audioUrl },  
+            mimetype: "audio/mpeg",  
+            fileName: `${queueData.title}.mp3`  
+        }, { quoted: message });  
 
-    // Non-command messages  
+        global.playQueue[chatId].documentSent = true;  
+        if (global.playQueue[chatId].audioSent && global.playQueue[chatId].voiceNoteSent) delete global.playQueue[chatId];  
+        return;  
+    }
+    
+    if (userReply === 'v' || userReply === 'voice' || userReply === 'vn') {
+        await sock.sendMessage(chatId, {
+            audio: { url: queueData.audioUrl },
+            mimetype: "audio/ogg; codecs=opus",
+            ptt: true,
+            fileName: `${queueData.title}.opus`
+        }, { quoted: message });
+        
+        global.playQueue[chatId].voiceNoteSent = true;
+        if (global.playQueue[chatId].audioSent && global.playQueue[chatId].documentSent) delete global.playQueue[chatId];
+        return;
+    }
+}
+
+        
             // Non-command messages  
     if (!userMessage.startsWith(currentPrefix)) {  
         // ✅ FIXED: Reduced auto-reactions for channels  
