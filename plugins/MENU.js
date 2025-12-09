@@ -1,3 +1,4 @@
+import { convertToVoiceNote } from '../lib/voiceConverter.js';
 import { loadDatabase, saveDatabase } from '../lib/database.js';
 import fs from "fs";
 import ffmpeg from "fluent-ffmpeg";
@@ -428,51 +429,31 @@ const time = global.getCurrentTime('time2');
                 }
 
                 // Send audio if enabled
-
-                
-
 if (menuAudio === "on") {
     try {
         const randomAudio = defaultAudios[Math.floor(Math.random() * defaultAudios.length)];
-
-        // Temp output path for ogg file
-        const outputFile = path.join("./data/temp", `voice_${Date.now()}.ogg`);
-
-        // Ensure temp folder exists
-        if (!fs.existsSync("./data/temp")) {
-            fs.mkdirSync("./data/temp");
-        }
-
-        // Convert to ogg/opus with ffmpeg
-        await new Promise((resolve, reject) => {
-            ffmpeg(randomAudio)
-                .audioCodec("libopus")
-                .audioChannels(1)
-                .audioFrequency(48000)
-                .format("ogg")
-                .on("end", resolve)
-                .on("error", reject)
-                .save(outputFile);
-        });
-
+        
+        console.log('[MENU] Sending menu audio as voice note...');
+        
+        // ✅ Use the converter function!
+        const voiceBuffer = await convertToVoiceNote(randomAudio, 'menu_audio');
+        
         // Send as voice note
         await context.replyPlain(
             {
-                audio: fs.readFileSync(outputFile),
+                audio: voiceBuffer,
                 mimetype: "audio/ogg; codecs=opus",
                 ptt: true,
             },
             { quoted: message }
         );
-
-        // Cleanup temp file
-        fs.unlinkSync(outputFile);
+        
+        console.log('[MENU] ✅ Menu audio sent');
+        
     } catch (err) {
         console.error("Failed to send menu audio:", err);
     }
 }
-
-                 
 
             } catch (error) {
 
