@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "@adiwajshing/keyed-db": "^0.2.4",
-    "@ffmpeg/ffmpeg": "^0.12.15",
+    "@ffmpeg-installer/ffmpeg": "^1.1.0",
     "@hapi/boom": "^10.0.1",
     "@whiskeysockets/baileys": "7.0.0-rc.6",
     "better-sqlite3": "^12.2.0",
