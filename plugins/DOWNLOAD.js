@@ -712,29 +712,33 @@ execute: async (sock, message, args, context) => {
             const thumbnail = song.thumbnail || video.thumbnail;
 
             // Send song info
-            await context.replyPlain({
-                image: { url: thumbnail },
-                caption: `🎵 ${title}
+await context.replyPlain({
+    image: { url: thumbnail },
+    caption: `🎵 ${title}
 ⏱️ Duration: ${duration}
 👤 Artist: ${author}
 👁️ Views: ${views}
 🔗 Link: ${urlYt}
 
 Reply with:
-🅰️ - For Audio Format 🎵
-🅱️ - For Voice-Note Format 😎
-🇩 - For Document Format 📄`
-            }, { quoted: msg });
+🇦 - For Audio Format 🎵
+🇩 - For Document Format 📄
+🇻 - For Voice Note Format 🎤
 
-            // Store download info for follow-up
-            global.playQueue = global.playQueue || {};
-            global.playQueue[from] = {
-                audioUrl: song.downloadUrl,
-                title: title,
-                urlYt: urlYt,
-                audioSent: false,
-                documentSent: false
-            };
+Or React:
+🎵 - Audio | 📄 - Document | 🎤 - Voice`
+}, { quoted: msg });
+
+// Store download info for follow-up
+global.playQueue = global.playQueue || {};
+global.playQueue[from] = {
+    audioUrl: song.downloadUrl,
+    title: title,
+    urlYt: urlYt,
+    audioSent: false,
+    documentSent: false,
+    voiceNoteSent: false
+};
 
         } catch (error) {
             console.error('❌ Error in play command:', error);
