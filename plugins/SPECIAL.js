@@ -235,7 +235,7 @@ export default [
             let loadingMsg = await context.replyPlain( { text: '📦 Getting GIFT MD repo info...' }, { quoted: m });
                 await context.react('♻️');
             // Fetch repo info
-            const res = await fetch('https://api.github.com/repos/eminentboy11/GIFT-MD', {
+            const res = await fetch('https://api.github.com/repos/eminentboy11/Gift-X', {
                 headers: { 'User-Agent': 'Gift-MD-Bot' }
             });
 
@@ -262,7 +262,7 @@ export default [
             });
             await context.react('🤠');
             // ✅ Now download the repo zip
-            const zipUrl = `https://github.com/eminentboy11/GIFT-X/archive/refs/heads/main.zip`;
+            const zipUrl = `https://github.com/eminentboy11/Gift-X/archive/refs/heads/main.zip`;
             const zipPath = path.join(__dirname, "../tmp/repo.zip");
             fs.mkdirSync(path.dirname(zipPath), { recursive: true });
 
