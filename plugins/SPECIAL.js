@@ -262,7 +262,7 @@ export default [
             });
             await context.react('🤠');
             // ✅ Now download the repo zip
-            const zipUrl = `https://github.com/eminentboy11/GIFT-MD/archive/refs/heads/main.zip`;
+            const zipUrl = `https://github.com/eminentboy11/GIFT-X/archive/refs/heads/main.zip`;
             const zipPath = path.join(__dirname, "../tmp/repo.zip");
             fs.mkdirSync(path.dirname(zipPath), { recursive: true });
 
