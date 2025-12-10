@@ -1,14 +1,14 @@
 const settings = {
  
-  botName: process.env.BOT_NAME || "GIFT md",
+  botName: process.env.BOT_NAME || "",
  
   ownerNumber: process.env.OWNER_NUMBER || '',
 
- botOwner: process.env.BOT_OWNER || 'eminentboy',
+ botOwner: process.env.BOT_OWNER || '',
  
-  packname: process.env.PACKNAME || 'GIFT-MD',
+  packname: process.env.PACKNAME || '',
  
-  prefix: process.env.PREFIX || '.',
+  prefix: process.env.PREFIX || '',
  
   defaultReaction: '✅',
  
