@@ -1,3 +1,5 @@
+import dotenv from "dotenv";
+dotenv.config();
 import { spawn } from 'child_process';
 import path from 'path';
 import fs from 'fs';
@@ -39,10 +41,10 @@ import { rmSync, existsSync } from 'fs';
 import { join } from 'path';
 import store from './lib/lightweight.js';
 import os from 'os';
-import dotenv from "dotenv";
-dotenv.config();
+
 console.log("[GIFT-MD] Loaded ENV:", process.env);
 console.log("SESSION_ID:", process.env.SESSION_ID);
+console.log("Loaded PREFIX:", process.env.PREFIX);
 console.log("OWNER_NUMBER:", process.env.OWNER_NUMBER);
 console.log("BOT_NAME:", process.env.BOT_NAME);
 console.log("PACKNAME:", process.env.PACKNAME);
